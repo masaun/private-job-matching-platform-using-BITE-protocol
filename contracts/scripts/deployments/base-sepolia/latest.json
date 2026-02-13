@@ -1,0 +1,15 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "timestamp": "2026-02-13T00:00:00Z",
+  "deployer": "DEPLOYER_ADDRESS",
+  "contracts": {
+    "ERC8004IdentityRegistry": "0x0821bF0921b19289FB30A8EA0fD65F751F3dc9bB",
+    "ERC8004ReputationRegistry": "0x5c7427699a532BED8d916E085dB296778844fCb9",
+    "ERC8004VerificationRegistry": "0x2d159141C3Badf038216E59089D0151CB2692dCc",
+    "IntentVault": "0x77013ce668D2D4598bC0409a2efF3afb948F3f09",
+    "MatchEscrow": "0x9d04136bEaA01d30Db51BD8F79232633A86E4B80",
+    "OfferContract": "0x334Dc1ff4C520D733e73695341f138Ed0EB2eF8A",
+    "FacilitatorGateway": "0x6B7B7F7fF2ADb1c69D4e2b80C25E695720590F07"
+  }
+}

@@ -1,0 +1,16 @@
+[profile.default]
+src = "src"
+out = "out"
+script = "scripts"
+libs = ["lib"]
+solc_version = "0.8.27"
+evm_version = "istanbul"
+fs_permissions = [{ access = "read-write", path = "./scripts/deployments" }]
+
+[rpc_endpoints]
+skale_base_sepolia = "https://base-sepolia-testnet.skalenodes.com/v1/bite-v2-sandbox-2"
+
+[etherscan]
+skale = { key = "${SKALE_ETHERSCAN_API_KEY}" }
+
+# See more config options at https://book.getfoundry.sh/config/

@@ -1,0 +1,17 @@
+# Environmental variable file
+.env
+
+# Compiler files
+cache/
+out/
+lib/openzeppelin-contracts/**
+lib/forge-std/**
+
+# Ignores development broadcast logs
+broadcast/**
+
+# Docs
+docs/
+
+# Extra
+.github/

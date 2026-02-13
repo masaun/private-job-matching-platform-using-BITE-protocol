@@ -1,0 +1,28 @@
+{
+  "name": "private-job-matching-platform-using-bite-protocol",
+  "version": "1.0.0",
+  "description": "Private Job Matching Platform using SKALE x402, ERC-8004, and BITE Protocol",
+  "type": "module",
+  "scripts": {
+    "build": "forge build && cd ../scripts && npm run extract-abis",
+    "test": "forge test",
+    "deploy": "forge script scripts/deployments/base-sepolia/Deploy.s.sol:DeployScript --rpc-url $SKALE_RPC_URL --broadcast && cd ../scripts && npm run extract-abis",
+    "compile": "forge build"
+  },
+  "keywords": [
+    "blockchain",
+    "privacy",
+    "job-matching",
+    "bite-protocol",
+    "erc-8004",
+    "x402",
+    "skale",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
