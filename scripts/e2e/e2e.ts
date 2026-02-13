@@ -277,7 +277,8 @@ async function submitCandidateProfile(
   const parsed = intentVault.interface.parseLog(event);
   const intentHash = parsed?.args.intentHash;
 
-  console.log(`✅ Intent stored: ${intentHash}`);
+  console.log(`✅ Intent stored (TX: ${receipt.hash})`);
+  console.log(`   Intent Hash: ${intentHash}`);
 
   return { intentHash, profile };
 }
@@ -329,7 +330,8 @@ async function submitEmployerJob(
   const parsed = intentVault.interface.parseLog(event);
   const intentHash = parsed?.args.intentHash;
 
-  console.log(`✅ Intent stored: ${intentHash}`);
+  console.log(`✅ Intent stored (TX: ${receipt.hash})`);
+  console.log(`   Intent Hash: ${intentHash}`);
 
   return { intentHash, job };
 }
@@ -428,7 +430,8 @@ async function submitMatchProof(
   const parsed = facilitatorGateway.interface.parseLog(event);
   const proofId = parsed?.args.proofId;
 
-  console.log(`✅ Proof verified: ${proofId}`);
+  console.log(`✅ Proof verified (TX: ${receipt.hash})`);
+  console.log(`   Proof ID: ${proofId}`);
 
   return proofId;
 }
@@ -462,9 +465,9 @@ async function createMatchEscrow(
     salaryAmount
   );
 
-  await tx.wait();
+  const receipt = await tx.wait();
 
-  console.log('✅ Escrow created');
+  console.log(`✅ Escrow created (TX: ${receipt.hash})`);
 }
 
 /**
@@ -498,9 +501,10 @@ async function createEncryptedOffer(
     encryptedTerms
   );
 
-  await tx.wait();
+  const receipt = await tx.wait();
 
-  console.log(`✅ Offer created: ${offerIdBytes}`);
+  console.log(`✅ Offer created (TX: ${receipt.hash})`);
+  console.log(`   Offer ID: ${offerIdBytes}`);
 
   return offerIdBytes;
 }
