@@ -79,7 +79,7 @@ interface DeployedContracts {
  * Connect to deployed contracts on SKALE Base Testnet
  */
 async function connectToContracts(provider: ethers.Provider): Promise<DeployedContracts> {
-  console.log('\n📡 Connecting to Deployed Contracts on SKALE Base Testnet...\n');
+  console.log('\n📡 Connecting to Deployed Contracts on SKALE Base Testnet (SKALE Base Sepolia)...\n');
   console.log(`Network: SKALE Base Sepolia`);
   console.log(`Chain ID: ${SKALE_CHAIN_ID}`);
   console.log(`RPC: ${SKALE_ON_BASE_SEPOLIA_RPC_URL}\n`);
@@ -188,8 +188,8 @@ async function setupMockUSDC(
       console.error('❌ Failed to mint tokens');
       console.error(`Error: ${error.message}`);
       console.log('\n💡 To fix this issue:');
-      console.log(`1. Ensure Minter account (${await mockUsdcMinterSigner.getAddress()}) has ETH for gas`);
-      console.log(`2. Get testnet ETH from: https://www.skale.space/faucet`);
+      console.log(`1. Ensure Minter account (${await mockUsdcMinterSigner.getAddress()}) has sufficient sFUEL balance for paying for gas fees on SKALE Base Sepolia`);
+      console.log(`2. Get free sFUEL from: https://base-sepolia-faucet.skale.space/`);
       console.log(`3. Or manually mint USDC to Employer: ${employerAddress}`);
       throw error;
     }
@@ -541,9 +541,9 @@ async function checkEthBalances(
   candidateSigner: ethers.Signer,
   employerSigner: ethers.Signer
 ): Promise<void> {
-  console.log('\n⛽ Checking ETH Balances...\n');
+  console.log('\n⛽ Checking sFUEL Balances (SKALE Gas Token)...\n');
 
-  const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 ETH recommended
+  const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 sFUEL recommended
   const accounts = [
     { name: 'Minter', signer: mockUsdcMinterSigner },
     { name: 'Agent', signer: agentSigner },
@@ -560,19 +560,20 @@ async function checkEthBalances(
     const isLow = balance < minBalance;
 
     if (isLow) {
-      console.log(`⚠️  ${account.name.padEnd(10)} (${address}): ${balanceStr} ETH - LOW BALANCE`);
+      console.log(`⚠️  ${account.name.padEnd(10)} (${address}): ${balanceStr} sFUEL - LOW BALANCE`);
       hasLowBalance = true;
     } else {
-      console.log(`✅ ${account.name.padEnd(10)} (${address}): ${balanceStr} ETH`);
+      console.log(`✅ ${account.name.padEnd(10)} (${address}): ${balanceStr} sFUEL`);
     }
   }
 
   if (hasLowBalance) {
-    console.log('\n⚠️  WARNING: Some accounts have low ETH balance (<0.01 ETH)');
-    console.log('💡 Get testnet ETH from: https://www.skale.space/faucet');
-    console.log('   This will be needed for gas fees during the demo.\n');
+    console.log('\n⚠️  WARNING: Some accounts have low sFUEL balance (<0.01 sFUEL)');
+    console.log('💡 Get free sFUEL from SKALE Base Sepolia Faucet:');
+    console.log('   https://base-sepolia-faucet.skale.space/');
+    console.log('   sFUEL is the free gas token on SKALE networks.\n');
   } else {
-    console.log('\n✅ All accounts have sufficient ETH balance\n');
+    console.log('\n✅ All accounts have sufficient sFUEL balance\n');
   }
 }
 
