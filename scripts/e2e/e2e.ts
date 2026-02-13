@@ -188,8 +188,8 @@ async function setupMockUSDC(
       console.error('❌ Failed to mint tokens');
       console.error(`Error: ${error.message}`);
       console.log('\n💡 To fix this issue:');
-      console.log(`1. Ensure Minter account (${await mockUsdcMinterSigner.getAddress()}) has sufficient sFUEL balance for paying for gas fees on SKALE Base Sepolia`);
-      console.log(`2. Get free sFUEL from: https://base-sepolia-faucet.skale.space/`);
+      console.log(`1. Ensure Minter account (${await mockUsdcMinterSigner.getAddress()}) has CREDIT for gas`);
+      console.log(`2. Get free CREDIT from: https://base-sepolia-faucet.skale.space/`);
       console.log(`3. Or manually mint USDC to Employer: ${employerAddress}`);
       throw error;
     }
@@ -532,7 +532,7 @@ async function createEncryptedOffer(
 }
 
 /**
- * Check ETH balances for all actors
+ * Check CREDIT balances for all actors
  */
 async function checkEthBalances(
   provider: ethers.Provider,
@@ -541,9 +541,9 @@ async function checkEthBalances(
   candidateSigner: ethers.Signer,
   employerSigner: ethers.Signer
 ): Promise<void> {
-  console.log('\n⛽ Checking sFUEL Balances (SKALE Gas Token)...\n');
+  console.log('\n⛽ Checking CREDIT Balances (SKALE Base Sepolia Gas Token)...\n');
 
-  const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 sFUEL recommended
+  const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 CREDIT recommended
   const accounts = [
     { name: 'Minter', signer: mockUsdcMinterSigner },
     { name: 'Agent', signer: agentSigner },
@@ -560,20 +560,20 @@ async function checkEthBalances(
     const isLow = balance < minBalance;
 
     if (isLow) {
-      console.log(`⚠️  ${account.name.padEnd(10)} (${address}): ${balanceStr} sFUEL - LOW BALANCE`);
+      console.log(`⚠️  ${account.name.padEnd(10)} (${address}): ${balanceStr} CREDIT - LOW BALANCE`);
       hasLowBalance = true;
     } else {
-      console.log(`✅ ${account.name.padEnd(10)} (${address}): ${balanceStr} sFUEL`);
+      console.log(`✅ ${account.name.padEnd(10)} (${address}): ${balanceStr} CREDIT`);
     }
   }
 
   if (hasLowBalance) {
-    console.log('\n⚠️  WARNING: Some accounts have low sFUEL balance (<0.01 sFUEL)');
-    console.log('💡 Get free sFUEL from SKALE Base Sepolia Faucet:');
+    console.log('\n⚠️  WARNING: Some accounts have low CREDIT balance (<0.01 CREDIT)');
+    console.log('💡 Get free CREDIT from SKALE Base Sepolia Faucet:');
     console.log('   https://base-sepolia-faucet.skale.space/');
-    console.log('   sFUEL is the free gas token on SKALE networks.\n');
+    console.log('   CREDIT is the free gas token on SKALE Base Sepolia network.\n');
   } else {
-    console.log('\n✅ All accounts have sufficient sFUEL balance\n');
+    console.log('\n✅ All accounts have sufficient CREDIT balance\n');
   }
 }
 
