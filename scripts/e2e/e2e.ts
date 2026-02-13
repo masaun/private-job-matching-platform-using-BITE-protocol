@@ -45,7 +45,7 @@ const SKALE_ON_BASE_SEPOLIA_RPC_URL = process.env.SKALE_ON_BASE_SEPOLIA_RPC_URL 
 const SKALE_CHAIN_ID = 324705682; // SKALE Base Testnet Chain ID
 
 // Private Keys
-const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001';
+const MOCK_USDC_MINTER_PRIVATE_KEY = process.env.MOCK_USDC_MINTER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000000005';
 const AI_AGENT_PRIVATE_KEY = process.env.AI_AGENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000004';
 const CANDIDATE_PRIVATE_KEY = process.env.CANDIDATE_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000002';
 const EMPLOYER_PRIVATE_KEY = process.env.EMPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000003';
@@ -151,7 +151,7 @@ async function connectToContracts(provider: ethers.Provider): Promise<DeployedCo
  */
 async function setupMockUSDC(
   provider: ethers.Provider,
-  deployerSigner: ethers.Signer,
+  mockUsdcMinterSigner: ethers.Signer,
   employerSigner: ethers.Signer,
   matchEscrowAddress: string
 ): Promise<void> {
@@ -166,17 +166,38 @@ async function setupMockUSDC(
 
   const mockUSDC = new ethers.Contract(PAYMENT_TOKEN_ADDRESS, mockUSDCABI, provider);
   const decimals = await mockUSDC.decimals();
-  
-  // Mint tokens to employer (150,000 USDC for safety)
   const employerAddress = await employerSigner.getAddress();
-  const mintAmount = BigInt(150000) * BigInt(10 ** Number(decimals));
   
-  console.log(`Minting ${ethers.formatUnits(mintAmount, decimals)} USDC to Employer...`);
-  const mintTx = await mockUSDC.connect(deployerSigner).mint(employerAddress, mintAmount);
-  await mintTx.wait();
+  // Check current balance
+  let balance = await mockUSDC.balanceOf(employerAddress);
+  const requiredAmount = BigInt(150000) * BigInt(10 ** Number(decimals));
   
-  const balance = await mockUSDC.balanceOf(employerAddress);
-  console.log(`✅ Employer balance: ${ethers.formatUnits(balance, decimals)} USDC`);
+  console.log(`Current Employer balance: ${ethers.formatUnits(balance, decimals)} USDC`);
+  
+  // Only mint if balance is insufficient
+  if (balance < requiredAmount) {
+    const mintAmount = requiredAmount - balance;
+    console.log(`Minting ${ethers.formatUnits(mintAmount, decimals)} USDC to Employer...`);
+    
+    try {
+      const mintTx = await mockUSDC.connect(mockUsdcMinterSigner).mint(employerAddress, mintAmount);
+      await mintTx.wait();
+      balance = await mockUSDC.balanceOf(employerAddress);
+      console.log(`✅ Tokens minted successfully`);
+    } catch (error: any) {
+      console.error('❌ Failed to mint tokens');
+      console.error(`Error: ${error.message}`);
+      console.log('\n💡 To fix this issue:');
+      console.log(`1. Ensure Minter account (${await mockUsdcMinterSigner.getAddress()}) has ETH for gas`);
+      console.log(`2. Get testnet ETH from: https://www.skale.space/faucet`);
+      console.log(`3. Or manually mint USDC to Employer: ${employerAddress}`);
+      throw error;
+    }
+  } else {
+    console.log('✅ Employer has sufficient USDC balance');
+  }
+  
+  console.log(`Final balance: ${ethers.formatUnits(balance, decimals)} USDC`);
 
   // Employer approves MatchEscrow to spend tokens
   console.log(`\nApproving MatchEscrow to spend tokens...`);
@@ -511,6 +532,51 @@ async function createEncryptedOffer(
 }
 
 /**
+ * Check ETH balances for all actors
+ */
+async function checkEthBalances(
+  provider: ethers.Provider,
+  mockUsdcMinterSigner: ethers.Signer,
+  agentSigner: ethers.Signer,
+  candidateSigner: ethers.Signer,
+  employerSigner: ethers.Signer
+): Promise<void> {
+  console.log('\n⛽ Checking ETH Balances...\n');
+
+  const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 ETH recommended
+  const accounts = [
+    { name: 'Minter', signer: mockUsdcMinterSigner },
+    { name: 'Agent', signer: agentSigner },
+    { name: 'Candidate', signer: candidateSigner },
+    { name: 'Employer', signer: employerSigner }
+  ];
+
+  let hasLowBalance = false;
+
+  for (const account of accounts) {
+    const address = await account.signer.getAddress();
+    const balance = await provider.getBalance(address);
+    const balanceStr = ethers.formatEther(balance);
+    const isLow = balance < minBalance;
+
+    if (isLow) {
+      console.log(`⚠️  ${account.name.padEnd(10)} (${address}): ${balanceStr} ETH - LOW BALANCE`);
+      hasLowBalance = true;
+    } else {
+      console.log(`✅ ${account.name.padEnd(10)} (${address}): ${balanceStr} ETH`);
+    }
+  }
+
+  if (hasLowBalance) {
+    console.log('\n⚠️  WARNING: Some accounts have low ETH balance (<0.01 ETH)');
+    console.log('💡 Get testnet ETH from: https://www.skale.space/faucet');
+    console.log('   This will be needed for gas fees during the demo.\n');
+  } else {
+    console.log('\n✅ All accounts have sufficient ETH balance\n');
+  }
+}
+
+/**
  * Main execution flow
  */
 async function main() {
@@ -519,14 +585,19 @@ async function main() {
 
   // Setup providers and signers
   const provider = new ethers.JsonRpcProvider(SKALE_ON_BASE_SEPOLIA_RPC_URL);
+  const mockUsdcMinterSigner = new ethers.Wallet(MOCK_USDC_MINTER_PRIVATE_KEY, provider);
   const agentSigner = new ethers.Wallet(AI_AGENT_PRIVATE_KEY, provider);
   const candidateSigner = new ethers.Wallet(CANDIDATE_PRIVATE_KEY, provider);
   const employerSigner = new ethers.Wallet(EMPLOYER_PRIVATE_KEY, provider);
 
   console.log('\n👥 Actors:');
+  console.log(`Minter:    ${await mockUsdcMinterSigner.getAddress()}`);
   console.log(`Agent:     ${await agentSigner.getAddress()}`);
   console.log(`Candidate: ${await candidateSigner.getAddress()}`);
   console.log(`Employer:  ${await employerSigner.getAddress()}`);
+
+  // Check ETH balances for all accounts
+  await checkEthBalances(provider, mockUsdcMinterSigner, agentSigner, candidateSigner, employerSigner);
 
   // Initialize services
   const biteService = createBiteService(SKALE_ON_BASE_SEPOLIA_RPC_URL);
@@ -535,7 +606,7 @@ async function main() {
   const contracts = await connectToContracts(provider);
 
   // Setup MockUSDC tokens for testing
-  await setupMockUSDC(provider, agentSigner, employerSigner, CONTRACT_ADDRESSES.matchEscrow);
+  await setupMockUSDC(provider, mockUsdcMinterSigner, employerSigner, CONTRACT_ADDRESSES.matchEscrow);
 
   // Initialize ERC-8004 service
   const erc8004Service = createERC8004Service(
