@@ -45,6 +45,7 @@ const SKALE_ON_BASE_SEPOLIA_RPC_URL = process.env.SKALE_ON_BASE_SEPOLIA_RPC_URL 
 const SKALE_CHAIN_ID = 324705682; // SKALE Base Testnet Chain ID
 
 // Private Keys
+const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001';
 const MOCK_USDC_MINTER_PRIVATE_KEY = process.env.MOCK_USDC_MINTER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000000005';
 const AI_AGENT_PRIVATE_KEY = process.env.AI_AGENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000004';
 const CANDIDATE_PRIVATE_KEY = process.env.CANDIDATE_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000002';
@@ -211,7 +212,8 @@ async function setupMockUSDC(
  */
 async function registerMatchingAgent(
   erc8004Service: any,
-  agentSigner: ethers.Signer
+  agentSigner: ethers.Signer,
+  deployerSigner: ethers.Signer
 ): Promise<string> {
   console.log('\n🤖 Registering AI Matching Agent...\n');
 
@@ -227,6 +229,19 @@ async function registerMatchingAgent(
   try {
     await erc8004Service.registerAgent(agentSigner, agentId, metadata);
     console.log(`✅ Agent registered: ${agentId}`);
+    
+    // Give initial reputation to new agents (required for FacilitatorGateway)
+    console.log('📊 Setting initial reputation...');
+    try {
+      // Record 2 successful interactions to get initial reputation score of 200 (weight=100 each)
+      // Minimum required is 100 for FacilitatorGateway
+      await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+      await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+      const reputation = await erc8004Service.getAgentReputation(agentId);
+      console.log(`✅ Initial reputation set: ${reputation.score} (minimum required: 100)`);
+    } catch (repError: any) {
+      console.log(`⚠️  Could not set initial reputation: ${repError.message}`);
+    }
   } catch (error: any) {
     // Check various places where the error message might be
     const errorStr = JSON.stringify(error);
@@ -237,6 +252,25 @@ async function registerMatchingAgent(
         errorStr.includes('already registered') ||
         errorStr.includes('Agent already registered')) {
       console.log(`ℹ️  Agent already registered: ${agentId}`);
+      
+      // Check if agent has sufficient reputation
+      const reputation = await erc8004Service.getAgentReputation(agentId);
+      console.log(`📊 Current reputation: ${reputation.score}`);
+      
+      if (Number(reputation.score) < 100) {
+        console.log('⚠️  Reputation below minimum (100), adding interactions...');
+        try {
+          // Add enough interactions to reach minimum
+          const needed = Math.ceil((100 - Number(reputation.score)) / 100) + 1;
+          for (let i = 0; i < needed; i++) {
+            await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+          }
+          const newRep = await erc8004Service.getAgentReputation(agentId);
+          console.log(`✅ Reputation updated: ${newRep.score}`);
+        } catch (repError: any) {
+          console.log(`⚠️  Could not update reputation: ${repError.message}`);
+        }
+      }
     } else {
       throw error;
     }
@@ -1004,6 +1038,7 @@ async function main() {
 
   // Setup providers and signers
   const provider = new ethers.JsonRpcProvider(SKALE_ON_BASE_SEPOLIA_RPC_URL);
+  const deployerSigner = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider);
   const mockUsdcMinterSigner = new ethers.Wallet(MOCK_USDC_MINTER_PRIVATE_KEY, provider);
   const agentSigner = new ethers.Wallet(AI_AGENT_PRIVATE_KEY, provider);
   const candidateSigner = new ethers.Wallet(CANDIDATE_PRIVATE_KEY, provider);
@@ -1036,7 +1071,7 @@ async function main() {
   );
 
   // Register AI agent
-  const agentId = await registerMatchingAgent(erc8004Service, agentSigner);
+  const agentId = await registerMatchingAgent(erc8004Service, agentSigner, deployerSigner);
 
   // Submit candidate profile
   const { intentHash: candidateIntentHash, profile } = await submitCandidateProfile(
