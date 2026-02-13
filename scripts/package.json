@@ -1,0 +1,31 @@
+{
+  "name": "private-job-matching-platform-using-bite-protocol",
+  "version": "1.0.0",
+  "description": "Private Job Matching Platform using SKALE x402, ERC-8004, and BITE Protocol",
+  "type": "module",
+  "scripts": {
+    "extract-abis": "tsx extract-abis.ts",
+    "e2e": "tsx e2e/e2e.ts"
+  },
+  "keywords": [
+    "blockchain",
+    "privacy",
+    "job-matching",
+    "bite-protocol",
+    "erc-8004",
+    "x402",
+    "skale",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
