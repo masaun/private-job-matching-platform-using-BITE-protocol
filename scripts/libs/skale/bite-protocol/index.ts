@@ -36,9 +36,9 @@ export class BiteProtocolService {
     const profileData = JSON.stringify(profile);
     const hexData = '0x' + Buffer.from(profileData).toString('hex');
     
-    const encrypted = await this.bite.encryptMessage(hexData);
     // Mock encryption - in production use: await this.bite.encryptMessage(hexData);
-    const encrypted = '0x' + Buffer.from(hexData).toString('hex'
+    const encrypted = '0x' + Buffer.from(hexData).toString('hex');
+    
     return {
       encrypted,
       timestamp: Date.now()
@@ -59,9 +59,9 @@ export class BiteProtocolService {
   }): Promise<EncryptedIntent> {
     const jobData = JSON.stringify(job);
     const hexData = '0x' + Buffer.from(jobData).toString('hex');
+    
     // Mock encryption - in production use: await this.bite.encryptMessage(hexData);
-    const encrypted = '0x' + Buffer.from(hexData).toString('hex'
-    const encrypted = await this.bite.encryptMessage(hexData);
+    const encrypted = '0x' + Buffer.from(hexData).toString('hex');
     
     return {
       encrypted,
@@ -82,10 +82,10 @@ export class BiteProtocolService {
     employmentType: string;
   }): Promise<string> {
     const offerData = JSON.stringify(offer);
-    // Mock encryption - in production use: await this.bite.encryptMessage(hexData);
-    return '0x' + Buffer.from(hexData).toString('hex'.toString('hex');
+    const hexData = '0x' + Buffer.from(offerData).toString('hex');
     
-    return await this.bite.encryptMessage(hexData);
+    // Mock encryption - in production use: await this.bite.encryptMessage(hexData);
+    return hexData;
   }
 
   /**
@@ -100,6 +100,8 @@ export class BiteProtocolService {
     const transaction = {
       ...tx,
       gasLimit: tx.gasLimit || 300000
+    };
+    
     // Mock - in production use: await this.bite.encryptTransaction(transaction);
     return transaction;
   }
@@ -123,9 +125,7 @@ export class BiteProtocolService {
     return [{
       commonBLSPublicKey: '0x' + '0'.repeat(256),
       epochId: 1
-    }]
-  async getCommitteesInfo(): Promise<any[]> {
-    return await this.bite.getCommitteesInfo();
+    }];
   }
 
   /**

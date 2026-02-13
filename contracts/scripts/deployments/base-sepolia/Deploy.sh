@@ -94,12 +94,28 @@ echo ""
 
 # Extract and save deployment info
 echo -e "${YELLOW}→ Saving deployment info...${NC}"
-BROADCAST_FILE="broadcast/Deploy.s.sol/84532/run-latest.json"
-DEPLOYMENT_FILE="scripts/deployments/base-sepolia/latest.json"
+# SKALE on Base Sepolia chain ID is 324705682
+CHAIN_ID="324705682"
+BROADCAST_DIR="broadcast/Deploy.s.sol/${CHAIN_ID}"
+BROADCAST_FILE="${BROADCAST_DIR}/run-latest.json"
+TIMESTAMP=$(date +%s)
+DEPLOYMENT_DIR="broadcast/Deploy.s.sol"
+DEPLOYMENT_TIMESTAMPED="${DEPLOYMENT_DIR}/deployment-${TIMESTAMP}.json"
+DEPLOYMENT_LATEST="${DEPLOYMENT_DIR}/latest.json"
 
 if [ -f "$BROADCAST_FILE" ]; then
-  cp "$BROADCAST_FILE" "$DEPLOYMENT_FILE"
-  echo -e "${GREEN}✓ Deployment info saved to ${DEPLOYMENT_FILE}${NC}"
+  # Copy to broadcast directory with timestamp
+  cp "$BROADCAST_FILE" "$DEPLOYMENT_TIMESTAMPED"
+  echo -e "${GREEN}✓ Deployment saved to ${DEPLOYMENT_TIMESTAMPED}${NC}"
+  
+  # Copy to latest.json
+  cp "$BROADCAST_FILE" "$DEPLOYMENT_LATEST"
+  echo -e "${GREEN}✓ Latest deployment saved to ${DEPLOYMENT_LATEST}${NC}"
+  
+  # Also save to scripts directory for backward compatibility
+  SCRIPTS_DEPLOYMENT="scripts/deployments/base-sepolia/latest.json"
+  cp "$BROADCAST_FILE" "$SCRIPTS_DEPLOYMENT"
+  echo -e "${GREEN}✓ Deployment info saved to ${SCRIPTS_DEPLOYMENT}${NC}"
   
   # Display deployed addresses if jq is available
   if command -v jq &> /dev/null; then
@@ -109,7 +125,7 @@ if [ -f "$BROADCAST_FILE" ]; then
     echo -e "${BLUE}╚════════════════════════════════════════════════╝${NC}"
     # Note: Adjust jq queries based on actual JSON structure
     echo -e "${GREEN}Contracts deployed successfully!${NC}"
-    echo -e "${YELLOW}Check ${DEPLOYMENT_FILE} for addresses${NC}"
+    echo -e "${YELLOW}Check ${DEPLOYMENT_LATEST} for addresses${NC}"
   fi
 else
   echo -e "${YELLOW}⚠ Warning: Broadcast file not found at ${BROADCAST_FILE}${NC}"
@@ -133,8 +149,9 @@ echo -e "${GREEN}║  ✓ Deployment Complete!                        ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
-echo -e "  1. Check deployment addresses in: ${DEPLOYMENT_FILE}"
-echo -e "  2. View contracts on BaseScan: https://sepolia.basescan.org"
-echo -e "  3. Run E2E tests: ${YELLOW}cd scripts && npm run e2e${NC}"
+echo -e "  1. Check deployment in: ${DEPLOYMENT_LATEST}"
+echo -e "  2. Timestamped backup: ${DEPLOYMENT_TIMESTAMPED}"
+echo -e "  3. View contracts on BaseScan: https://sepolia.basescan.org"
+echo -e "  4. Run E2E tests: ${YELLOW}cd scripts && npm run e2e${NC}"
 echo ""
 
