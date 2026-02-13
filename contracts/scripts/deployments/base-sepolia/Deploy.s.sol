@@ -84,6 +84,6 @@ contract DeployScript is Script {
         // vm.writeFile("scripts/deployments/base-sepolia/latest.json", json);
         
         console.log("\nDeployment complete!");
-        console.log("Deployment info saved to:", filename);
+        // console.log("Deployment info saved to:", filename);
     }
 }

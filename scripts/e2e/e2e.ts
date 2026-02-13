@@ -45,6 +45,7 @@ const SKALE_ON_BASE_SEPOLIA_RPC_URL = process.env.SKALE_ON_BASE_SEPOLIA_RPC_URL 
 const SKALE_CHAIN_ID = 324705682; // SKALE Base Testnet Chain ID
 
 // Private Keys
+const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001';
 const MOCK_USDC_MINTER_PRIVATE_KEY = process.env.MOCK_USDC_MINTER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000000005';
 const AI_AGENT_PRIVATE_KEY = process.env.AI_AGENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000004';
 const CANDIDATE_PRIVATE_KEY = process.env.CANDIDATE_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000002';
@@ -211,7 +212,8 @@ async function setupMockUSDC(
  */
 async function registerMatchingAgent(
   erc8004Service: any,
-  agentSigner: ethers.Signer
+  agentSigner: ethers.Signer,
+  deployerSigner: ethers.Signer
 ): Promise<string> {
   console.log('\n🤖 Registering AI Matching Agent...\n');
 
@@ -227,6 +229,19 @@ async function registerMatchingAgent(
   try {
     await erc8004Service.registerAgent(agentSigner, agentId, metadata);
     console.log(`✅ Agent registered: ${agentId}`);
+    
+    // Give initial reputation to new agents (required for FacilitatorGateway)
+    console.log('📊 Setting initial reputation...');
+    try {
+      // Record 2 successful interactions to get initial reputation score of 200 (weight=100 each)
+      // Minimum required is 100 for FacilitatorGateway
+      await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+      await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+      const reputation = await erc8004Service.getAgentReputation(agentId);
+      console.log(`✅ Initial reputation set: ${reputation.score} (minimum required: 100)`);
+    } catch (repError: any) {
+      console.log(`⚠️  Could not set initial reputation: ${repError.message}`);
+    }
   } catch (error: any) {
     // Check various places where the error message might be
     const errorStr = JSON.stringify(error);
@@ -237,6 +252,25 @@ async function registerMatchingAgent(
         errorStr.includes('already registered') ||
         errorStr.includes('Agent already registered')) {
       console.log(`ℹ️  Agent already registered: ${agentId}`);
+      
+      // Check if agent has sufficient reputation
+      const reputation = await erc8004Service.getAgentReputation(agentId);
+      console.log(`📊 Current reputation: ${reputation.score}`);
+      
+      if (Number(reputation.score) < 100) {
+        console.log('⚠️  Reputation below minimum (100), adding interactions...');
+        try {
+          // Add enough interactions to reach minimum
+          const needed = Math.ceil((100 - Number(reputation.score)) / 100) + 1;
+          for (let i = 0; i < needed; i++) {
+            await erc8004Service.recordInteraction(deployerSigner, agentId, true, 100);
+          }
+          const newRep = await erc8004Service.getAgentReputation(agentId);
+          console.log(`✅ Reputation updated: ${newRep.score}`);
+        } catch (repError: any) {
+          console.log(`⚠️  Could not update reputation: ${repError.message}`);
+        }
+      }
     } else {
       throw error;
     }
@@ -278,13 +312,42 @@ async function submitCandidateProfile(
 
   console.log('Profile:', profile);
 
-  // Encrypt profile
+  // Step 1: Encrypt profile data (content encryption)
   const encrypted = await biteService.encryptCandidateProfile(profile);
-  console.log('✅ Profile encrypted');
+  console.log('✅ Profile data encrypted');
 
-  // Store in IntentVault
-  const tx = await intentVault.connect(candidateSigner).storeIntent(encrypted.encrypted, 0); // 0 = CANDIDATE
-  const receipt = await tx.wait();
+  // Step 2: Prepare transaction calldata for storeIntent
+  const storeIntentData = intentVault.interface.encodeFunctionData('storeIntent', [
+    encrypted.encrypted,
+    0 // 0 = CANDIDATE
+  ]);
+
+  // Step 3: Encrypt the entire transaction (transaction-level encryption)
+  let tx: any;
+  let receipt: any;
+  
+  try {
+    const encryptedTx = await biteService.encryptTransaction({
+      to: await intentVault.getAddress(),
+      data: storeIntentData,
+      gasLimit: 500000
+    });
+    
+    console.log('✅ Transaction encrypted with BITE!');
+    console.log('   🔐 Dual encryption: Profile data + Transaction itself');
+    console.log('   📡 Sending to BITE magic address for confidential execution...');
+    
+    // Send encrypted transaction
+    tx = await candidateSigner.sendTransaction(encryptedTx);
+    receipt = await tx.wait();
+    console.log('✅ Encrypted transaction executed by SKALE validators');
+  } catch (encryptError: any) {
+    // Fallback: Send normal transaction when BITE infrastructure unavailable
+    console.log('   ℹ️  BITE transaction encryption not available, using standard transaction');
+    console.log('   ℹ️  Profile data is still encrypted with BITE message encryption');
+    tx = await intentVault.connect(candidateSigner).storeIntent(encrypted.encrypted, 0);
+    receipt = await tx.wait();
+  }
 
   // Get intent hash from event
   const event = receipt.logs.find((log: any) => {
@@ -331,13 +394,42 @@ async function submitEmployerJob(
 
   console.log('Job:', job);
 
-  // Encrypt job requirements
+  // Step 1: Encrypt job requirements data (content encryption)
   const encrypted = await biteService.encryptJobRequirements(job);
-  console.log('✅ Job requirements encrypted');
+  console.log('✅ Job requirements data encrypted');
 
-  // Store in IntentVault
-  const tx = await intentVault.connect(employerSigner).storeIntent(encrypted.encrypted, 1); // 1 = EMPLOYER
-  const receipt = await tx.wait();
+  // Step 2: Prepare transaction calldata for storeIntent
+  const storeIntentData = intentVault.interface.encodeFunctionData('storeIntent', [
+    encrypted.encrypted,
+    1 // 1 = EMPLOYER
+  ]);
+
+  // Step 3: Encrypt the entire transaction (transaction-level encryption)
+  let tx: any;
+  let receipt: any;
+  
+  try {
+    const encryptedTx = await biteService.encryptTransaction({
+      to: await intentVault.getAddress(),
+      data: storeIntentData,
+      gasLimit: 500000
+    });
+    
+    console.log('✅ Transaction encrypted with BITE!');
+    console.log('   🔐 Dual encryption: Job data + Transaction itself');
+    console.log('   📡 Sending to BITE magic address for confidential execution...');
+    
+    // Send encrypted transaction
+    tx = await employerSigner.sendTransaction(encryptedTx);
+    receipt = await tx.wait();
+    console.log('✅ Encrypted transaction executed by SKALE validators');
+  } catch (encryptError: any) {
+    // Fallback: Send normal transaction when BITE infrastructure unavailable
+    console.log('   ℹ️  BITE transaction encryption not available, using standard transaction');
+    console.log('   ℹ️  Job data is still encrypted with BITE message encryption');
+    tx = await intentVault.connect(employerSigner).storeIntent(encrypted.encrypted, 1);
+    receipt = await tx.wait();
+  }
 
   // Get intent hash from event
   const event = receipt.logs.find((log: any) => {
@@ -556,7 +648,8 @@ async function revealAndReviewOffer(
   };
 
   // Try to use BITE CTX if available, but fall back to simulation
-  const CTX_GAS_PAYMENT = ethers.parseEther('0.06');
+  // CTX_GAS_PAYMENT set to 0 for SKALE (zero gas price)
+  const CTX_GAS_PAYMENT = 0;
   let usedBiteCTX = false;
 
   try {
@@ -585,8 +678,14 @@ async function revealAndReviewOffer(
     usedBiteCTX = true;
     
   } catch (error: any) {
-    console.log('ℹ️  BITE CTX not available (requires full BITE infrastructure)');
-    console.log(`   ${error.message || 'Network or infrastructure issue'}`);
+    const errorMsg = error.message || '';
+    
+    if (errorMsg.includes('IncorrectReturnDataLength') || errorMsg.includes('0xb4a47854')) {
+      console.log('ℹ️  BITE precompiles not available on this network');
+      console.log('   This network does not have BITE CTX infrastructure deployed');
+    } else {
+      console.log(`ℹ️  BITE CTX not available: ${errorMsg.split('\n')[0]}`);
+    }
     console.log('📝 Using simulated decryption for demo purposes');
   }
 
@@ -773,6 +872,171 @@ async function checkEthBalances(
 }
 
 /**
+ * Demonstrate Encrypted Transaction (BITE Protocol Feature #1)
+ * This encrypts the entire transaction's `to` and `data` fields
+ */
+async function demonstrateEncryptedTransaction(
+  biteService: any,
+  provider: ethers.Provider,
+  candidateSigner: ethers.Signer
+): Promise<void> {
+  console.log('\n🔐 Demonstrating BITE Encrypted Transaction...\n');
+  console.log('This demonstrates encrypting an entire EVM transaction');
+  console.log('The transaction\'s `to` address and `data` are encrypted end-to-end\n');
+
+  // Example: Encrypt a mock ERC20 transfer call
+  const transferInterface = new ethers.Interface([
+    'function transfer(address to, uint256 amount)'
+  ]);
+  
+  // Use the candidate's address as the recipient (guaranteed valid)
+  const recipientAddress = await candidateSigner.getAddress();
+  const amount = ethers.parseUnits('100', 6); // 100 USDC
+  const transferData = transferInterface.encodeFunctionData('transfer', [
+    recipientAddress,
+    amount
+  ]);
+
+    console.log('Original Transaction:');
+    console.log(`  to: ${PAYMENT_TOKEN_ADDRESS}`);
+    console.log(`  data: ${transferData.slice(0, 66)}...`);
+    console.log(`  gasLimit: 200000\n`);
+
+    console.log('📝 How Encrypted Transactions work:');
+    console.log('1. Original `to` and `data` are RLP encoded');
+    console.log('2. Encoded data is encrypted with AES (random key)');
+    console.log('3. AES key is encrypted with BLS threshold encryption');
+    console.log('4. Transaction is sent to BITE magic address');
+    console.log('5. SKALE validators decrypt and execute in the next block');
+    console.log('6. Decrypted data is available after finality\n');
+
+    try {
+      // Encrypt the transaction
+      const encryptedTx = await biteService.encryptTransaction({
+        to: PAYMENT_TOKEN_ADDRESS,
+        data: transferData,
+        gasLimit: 200000
+      });
+
+      console.log('✅ Transaction encrypted with BITE!');
+      console.log('Encrypted Transaction:');
+      console.log(`  to: ${encryptedTx.to} (BITE magic address)`);
+      console.log(`  data: ${encryptedTx.data.slice(0, 66)}... (encrypted payload)`);
+      console.log(`  gasLimit: ${encryptedTx.gasLimit}\n`);
+    } catch (encryptError: any) {
+      console.log('ℹ️  BITE encryption requires live BITE infrastructure');
+      console.log('   In production, the encrypted transaction would look like:');
+      console.log('   {');
+      console.log('     to: "0x..." (BITE magic address),');
+      console.log('     data: "0x[EPOCH_ID, AES_ENCRYPTED_DATA, BLS_ENCRYPTED_KEY]",');
+      console.log('     gasLimit: 200000');
+      console.log('   }\n');
+    }
+
+    // Note: We don't actually send this transaction in the demo
+    // In production, you would send it like:
+    // const txHash = await candidateSigner.sendTransaction(encryptedTx);
+    // await provider.waitForTransaction(txHash);
+    // const decrypted = await biteService.getDecryptedTransactionData(txHash);
+
+    console.log('ℹ️  Transaction NOT sent (demo mode)');
+    console.log('   In production, send with: signer.sendTransaction(encryptedTx)');
+    console.log('   After finality, retrieve decrypted data with:');
+    console.log('   bite.getDecryptedTransactionData(txHash)\n');
+}
+
+/**
+ * Monitor BITE Committee Rotation (Production Feature)
+ * Monitors committee changes to handle CTX expiration
+ */
+async function monitorCommitteeRotation(
+  biteService: any
+): Promise<() => void> {
+  console.log('\n🔄 Starting BITE Committee Rotation Monitor...\n');
+  console.log('Monitoring committee changes for CTX expiration handling');
+  console.log('Checking every 30 seconds...\n');
+
+  let monitorCount = 0;
+  const maxMonitors = 2; // Only monitor twice in demo
+  let intervalId: NodeJS.Timeout | null = null;
+  let cleanupCalled = false;
+
+  const cleanup = () => {
+    if (intervalId && !cleanupCalled) {
+      clearInterval(intervalId);
+      cleanupCalled = true;
+    }
+  };
+
+  try {
+    // Try to get initial committee info
+    const initialCommittees = await biteService.getCommitteesInfo();
+    
+    const checkRotation = async () => {
+      monitorCount++;
+      
+      try {
+        const committees = await biteService.getCommitteesInfo();
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] Committee Status Check #${monitorCount}:`);
+        
+        if (committees.length === 2) {
+          console.log('⚠️  ROTATION IN PROGRESS - Dual Encryption Active');
+          console.log(`   Current committees: ${committees.length}`);
+          console.log('   Note: CTX submissions during rotation are encrypted with both keys');
+          committees.forEach((committee: any, index: number) => {
+            console.log(`   Committee ${index + 1}:`);
+            console.log(`     Epoch ID: ${committee.epochId}`);
+            console.log(`     BLS Public Key: ${committee.commonBLSPublicKey.slice(0, 20)}...`);
+          });
+        } else {
+          console.log('✅ Normal Operation - Single Committee Active');
+          console.log(`   Epoch ID: ${committees[0]?.epochId}`);
+          console.log(`   BLS Public Key: ${committees[0]?.commonBLSPublicKey.slice(0, 20)}...`);
+        }
+        console.log();
+
+        // Stop monitoring after maxMonitors checks (for demo)
+        if (monitorCount >= maxMonitors) {
+          console.log('ℹ️  Committee monitoring demo complete (stopped after 2 checks)');
+          console.log('   In production, this would run continuously\n');
+          cleanup();
+        }
+      } catch (error: any) {
+        console.log(`ℹ️  Committee monitoring requires live BITE infrastructure`);
+        console.log('   In production, this would show:');
+        console.log('   - Current epoch ID and BLS public key');
+        console.log('   - Rotation status (single or dual committee)');
+        console.log('   - Real-time updates every 30 seconds\n');
+        cleanup();
+      }
+    };
+
+    // Initial check
+    await checkRotation();
+
+    // Set up periodic monitoring if still needed
+    if (monitorCount < maxMonitors && !cleanupCalled) {
+      intervalId = setInterval(checkRotation, 30000);
+    }
+
+  } catch (error: any) {
+    console.log('ℹ️  Committee monitoring requires live BITE infrastructure');
+    console.log('   In production, this feature would:');
+    console.log('   - Monitor committee rotation every 30 seconds');
+    console.log('   - Detect dual encryption periods (2 committees active)');
+    console.log('   - Help prevent CTX expiration during rotation');
+    console.log('   Example output:');
+    console.log('   [2026-02-13T...] Committee Status Check #1:');
+    console.log('   ✅ Normal Operation - Single Committee Active');
+    console.log('      Epoch ID: 1234');
+    console.log('      BLS Public Key: 0xabcd...\n');
+  }
+
+  return cleanup;
+}
+
+/**
  * Main execution flow
  */
 async function main() {
@@ -781,6 +1045,7 @@ async function main() {
 
   // Setup providers and signers
   const provider = new ethers.JsonRpcProvider(SKALE_ON_BASE_SEPOLIA_RPC_URL);
+  const deployerSigner = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider);
   const mockUsdcMinterSigner = new ethers.Wallet(MOCK_USDC_MINTER_PRIVATE_KEY, provider);
   const agentSigner = new ethers.Wallet(AI_AGENT_PRIVATE_KEY, provider);
   const candidateSigner = new ethers.Wallet(CANDIDATE_PRIVATE_KEY, provider);
@@ -813,7 +1078,7 @@ async function main() {
   );
 
   // Register AI agent
-  const agentId = await registerMatchingAgent(erc8004Service, agentSigner);
+  const agentId = await registerMatchingAgent(erc8004Service, agentSigner, deployerSigner);
 
   // Submit candidate profile
   const { intentHash: candidateIntentHash, profile } = await submitCandidateProfile(
@@ -860,6 +1125,24 @@ async function main() {
       salaryAmount
     );
 
+    // ========================================
+    // Monitor Committee Rotation Before CTX Operations
+    // ========================================
+    console.log('\n🔄 Checking BITE Committee Status for CTX Operations...\n');
+    
+    const committees = await biteService.getCommitteesInfo();
+    const inRotation = committees.length === 2;
+    
+    if (inRotation) {
+      console.log('⚠️  Committee rotation in progress - Dual encryption active');
+      console.log('   CTX transactions will be encrypted with both committees');
+      console.log('   This ensures no transaction loss during rotation\n');
+    } else {
+      console.log('✅ Single committee active - Normal CTX operation');
+      console.log(`   Epoch: ${committees[0]?.id || 'N/A'}`);
+      console.log('   Ready for encrypted offer creation and revelation\n');
+    }
+
     // Create encrypted offer
     const offerTerms = {
       jobTitle: job.title,
@@ -882,6 +1165,21 @@ async function main() {
     );
 
     console.log('\n✅ Encrypted offer created successfully!');
+
+    // ========================================
+    // Check Committee Status Before CTX Revelation
+    // ========================================
+    console.log('\n🔄 Verifying Committee Status Before CTX Revelation...\n');
+    
+    const revealCommittees = await biteService.getCommitteesInfo();
+    const revealInRotation = revealCommittees.length === 2;
+    
+    if (revealInRotation) {
+      console.log('⚠️  Committee rotation detected during offer lifecycle');
+      console.log('   CTX may take longer to decrypt due to dual-committee consensus\n');
+    } else {
+      console.log('✅ Committee status stable - Proceeding with CTX revelation\n');
+    }
 
     // ========================================
     // STEP 1: Candidate reveals and reviews offer using BITE CTX

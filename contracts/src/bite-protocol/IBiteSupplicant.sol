@@ -1,19 +1,42 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.27;
+// ================================================================================================================================== //
+// @notice - This file is adapted from the bite-solidity repository (@skalenetwork/bite-solidity) by SKALE Labs                                                     //
+// @notice - Original source: https://github.com/skalenetwork/bite-solidity/blob/develop/contracts/interfaces/IBiteSupplicant.sol     //
+// ================================================================================================================================== //
+
+
+// SPDX-License-Identifier: AGPL-3.0-only
 
 /**
- * @title IBiteSupplicant - Mock Implementation  
- * @notice Interface for contracts that receive BITE decryption callbacks
- * @dev In production, use @skalenetwork/bite-solidity package
+ *   IBiteSupplicant.sol - bite-solidity
+ *   Copyright (C) 2026-Present SKALE Labs
+ *   @author Dmytro Stebaiev
+ *
+ *   bite-solidity is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero General Public License as published
+ *   by the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   bite-solidity is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with bite-solidity.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+pragma solidity ^0.8.24;
+
+
+/// @title IBiteSupplicant
+/// @author Dmytro Stebaiev
+/// @notice Interface for contracts that can handle decrypted data from BITE
 interface IBiteSupplicant {
-    /**
-     * @notice Callback function called by SKALE consensus with decrypted data
-     * @param decryptedArgs Array of decrypted byte arrays
-     * @param plaintextArgs Array of plaintext byte arrays (passed through)
-     */
+    /// @notice Called by the DecryptAndExecute precompiled contract after decryption
+    /// @param decryptedArguments The decrypted arguments
+    /// @param plaintextArguments The plaintext arguments
     function onDecrypt(
-        bytes[] calldata decryptedArgs,
-        bytes[] calldata plaintextArgs
+        bytes[] calldata decryptedArguments,
+        bytes[] calldata plaintextArguments
     ) external;
 }
