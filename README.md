@@ -80,6 +80,28 @@ A privacy-preserving job matching platform where AI agents act as job matching a
 - **ERC8004ReputationRegistry** - Track agent performance and credibility
 - **ERC8004VerificationRegistry** - Verify agent capabilities
 
+<br>
+
+## Deployed Contract Addresses on [`SKALE / BASE Sepolia`](https://docs.skale.space/developers/integrate-skale/connect-to-skale#skale-base-testnet) 
+
+NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
+
+| Contract Name | Address |
+|--------------|---------|
+| **ERC8004IdentityRegistry** | [`0x1dbfd3130a11fb9aab68f6f5e951dc6806aeee61`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1dbfd3130a11fb9aab68f6f5e951dc6806aeee61) |
+| **ERC8004ReputationRegistry** | [`0x59e5927bc672da957b209bb40945b002b81e2a7b`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x59e5927bc672da957b209bb40945b002b81e2a7b) |
+| **ERC8004VerificationRegistry** | [`0xf016f797f75deff4d64e9b18b5d251a8f38a80d1`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xf016f797f75deff4d64e9b18b5d251a8f38a80d1) |
+| **IntentVault** | [`0x4b7fdcc6e1b543303289b0d47a0895bc8813fa3e`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x4b7fdcc6e1b543303289b0d47a0895bc8813fa3e) |
+| **MatchEscrow** | [`0x863ca53da2b97a058c90972b50b49d7287ee08f2`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x863ca53da2b97a058c90972b50b49d7287ee08f2) |
+| **OfferContract** | [`0xde61b3c3d80c35b781cb438595b0978dfd180941`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xde61b3c3d80c35b781cb438595b0978dfd180941) |
+| **FacilitatorGateway** | [`0x1713e2b20be93e9fe4bba1e9d87f6fb3569bb5b7`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1713e2b20be93e9fe4bba1e9d87f6fb3569bb5b7) |
+| **MockUSDC** | [`0x794f9a51178246cbe33180e4036543bec664e3c2`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x794f9a51178246cbe33180e4036543bec664e3c2) |
+
+**Network:** SKALE Chaos Testnet (`chainId: 324705682`)
+
+<br>
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -283,20 +305,3 @@ Update `AGENT_FEE_BPS` in [contracts/MatchEscrow.sol](contracts/MatchEscrow.sol)
 - [ERC-8004 Standard](https://docs.skale.space/get-started/agentic-builders/start-with-erc-8004)
 - [x402 Protocol](https://docs.skale.space/get-started/agentic-builders/start-with-x402)
 - [SKALE Documentation](https://docs.skale.space/)
-
-## 🤝 Contributing
-
-Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
-## 🎓 Built For
-
-**SKALE - SF🇺🇸 Agentic Commerce x402 Hackathon**  
-February 12-14, 2026
-
----
-
-**Revolutionizing recruitment with privacy-first AI agents on SKALE** 🚀
