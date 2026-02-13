@@ -79,9 +79,9 @@ contract DeployScript is Script {
             '}'
         );
 
-        string memory filename = string.concat("scripts/deployments/base-sepolia/deployment-", vm.toString(block.timestamp), ".json");
-        vm.writeFile(filename, json);
-        vm.writeFile("scripts/deployments/base-sepolia/latest.json", json);
+        // string memory filename = string.concat("scripts/deployments/base-sepolia/deployment-", vm.toString(block.timestamp), ".json");
+        // vm.writeFile(filename, json);
+        // vm.writeFile("scripts/deployments/base-sepolia/latest.json", json);
         
         console.log("\nDeployment complete!");
         console.log("Deployment info saved to:", filename);
