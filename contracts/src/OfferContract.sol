@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.27;
 
-import { BITE } from "./bite-protocol/BITE.sol";
-import { IBiteSupplicant } from "./bite-protocol/IBiteSupplicant.sol";
+import { BITE } from "@skalenetwork/bite-solidity/BITE.sol";
+import { IBiteSupplicant } from "@skalenetwork/bite-solidity/interfaces/IBiteSupplicant.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
