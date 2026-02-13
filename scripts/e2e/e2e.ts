@@ -57,11 +57,12 @@ const CONTRACT_ADDRESSES = {
   intentVault: process.env.INTENT_VAULT_ADDRESS || '0x77013ce668D2D4598bC0409a2efF3afb948F3f09',
   matchEscrow: process.env.MATCH_ESCROW_ADDRESS || '0x9d04136bEaA01d30Db51BD8F79232633A86E4B80',
   offerContract: process.env.OFFER_CONTRACT_ADDRESS || '0x334Dc1ff4C520D733e73695341f138Ed0EB2eF8A',
-  facilitatorGateway: process.env.FACILITATOR_GATEWAY_ADDRESS || '0x6B7B7F7fF2ADb1c69D4e2b80C25E695720590F07'
+  facilitatorGateway: process.env.FACILITATOR_GATEWAY_ADDRESS || '0x6B7B7F7fF2ADb1c69D4e2b80C25E695720590F07',
+  mockUSDC: process.env.MOCK_USDC_ADDRESS || '0x0000000000000000000000000000000000000000'
 };
 
-// Payment Token (Axios USD on SKALE Base Sepolia)
-const PAYMENT_TOKEN_ADDRESS = process.env.PAYMENT_TOKEN_ADDRESS || '0x61a26022927096f444994dA1e53F0FD9487EAfcf';
+// Payment Token (MockUSDC for testing)
+const PAYMENT_TOKEN_ADDRESS = process.env.MOCK_USDC_ADDRESS || CONTRACT_ADDRESSES.mockUSDC;
 
 interface DeployedContracts {
   identityRegistry: ethers.Contract;
@@ -142,6 +143,45 @@ async function connectToContracts(provider: ethers.Provider): Promise<DeployedCo
     offerContract,
     facilitatorGateway
   };
+}
+
+/**
+ * Setup MockUSDC tokens for testing
+ */
+async function setupMockUSDC(
+  provider: ethers.Provider,
+  deployerSigner: ethers.Signer,
+  employerSigner: ethers.Signer,
+  matchEscrowAddress: string
+): Promise<void> {
+  console.log('\n💰 Setting up MockUSDC tokens...\n');
+
+  const mockUSDCABI = [
+    'function mint(address to, uint256 amount) external',
+    'function approve(address spender, uint256 amount) external returns (bool)',
+    'function balanceOf(address account) external view returns (uint256)',
+    'function decimals() external view returns (uint8)'
+  ];
+
+  const mockUSDC = new ethers.Contract(PAYMENT_TOKEN_ADDRESS, mockUSDCABI, provider);
+  const decimals = await mockUSDC.decimals();
+  
+  // Mint tokens to employer (150,000 USDC for safety)
+  const employerAddress = await employerSigner.getAddress();
+  const mintAmount = BigInt(150000) * BigInt(10 ** Number(decimals));
+  
+  console.log(`Minting ${ethers.formatUnits(mintAmount, decimals)} USDC to Employer...`);
+  const mintTx = await mockUSDC.connect(deployerSigner).mint(employerAddress, mintAmount);
+  await mintTx.wait();
+  
+  const balance = await mockUSDC.balanceOf(employerAddress);
+  console.log(`✅ Employer balance: ${ethers.formatUnits(balance, decimals)} USDC`);
+
+  // Employer approves MatchEscrow to spend tokens
+  console.log(`\nApproving MatchEscrow to spend tokens...`);
+  const approveTx = await mockUSDC.connect(employerSigner).approve(matchEscrowAddress, ethers.MaxUint256);
+  await approveTx.wait();
+  console.log(`✅ MatchEscrow approved to spend USDC`);
 }
 
 /**
@@ -488,6 +528,9 @@ async function main() {
   
   // Connect to deployed contracts
   const contracts = await connectToContracts(provider);
+
+  // Setup MockUSDC tokens for testing
+  await setupMockUSDC(provider, agentSigner, employerSigner, CONTRACT_ADDRESSES.matchEscrow);
 
   // Initialize ERC-8004 service
   const erc8004Service = createERC8004Service(

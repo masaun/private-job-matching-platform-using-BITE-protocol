@@ -19,7 +19,8 @@ const contracts = [
   'IntentVault',
   'MatchEscrow',
   'OfferContract',
-  'FacilitatorGateway'
+  'FacilitatorGateway',
+  'MockUSDC'
 ];
 
 interface ContractArtifact {
@@ -71,6 +72,8 @@ export const OfferContractABI = ${JSON.stringify(abis.OfferContract, null, 2)} a
 
 export const FacilitatorGatewayABI = ${JSON.stringify(abis.FacilitatorGateway, null, 2)} as const;
 
+export const MockUSDCABI = ${JSON.stringify(abis.MockUSDC, null, 2)} as const;
+
 // Export all ABIs as a collection
 export const ABIS = {
   ERC8004IdentityRegistry: ERC8004IdentityRegistryABI,
@@ -80,6 +83,7 @@ export const ABIS = {
   MatchEscrow: MatchEscrowABI,
   OfferContract: OfferContractABI,
   FacilitatorGateway: FacilitatorGatewayABI,
+  MockUSDC: MockUSDCABI,
 } as const;
 `;
   
