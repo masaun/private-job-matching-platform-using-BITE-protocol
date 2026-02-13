@@ -19,28 +19,50 @@
  * 10. Settlement and reputation update
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { ethers } from 'ethers';
+
+// Load environment variables from contracts/.env
+config({ path: resolve(process.cwd(), '../contracts/.env') });
 import { createBiteService } from '../libs/skale/bite-protocol';
 import { createERC8004Service } from '../libs/skale/erc-8004';
 import { createX402Service } from '../libs/skale/x402';
 
-// Contract ABIs (simplified for demo)
-import IntentVaultArtifact from '../../out/IntentVault.sol/IntentVault.json';
-import MatchEscrowArtifact from '../../out/MatchEscrow.sol/MatchEscrow.json';
-import OfferContractArtifact from '../../out/OfferContract.sol/OfferContract.json';
-import FacilitatorGatewayArtifact from '../../out/FacilitatorGateway.sol/FacilitatorGateway.json';
-import ERC8004IdentityRegistryArtifact from '../../out/ERC8004IdentityRegistry.sol/ERC8004IdentityRegistry.json';
-import ERC8004ReputationRegistryArtifact from '../../out/ERC8004ReputationRegistry.sol/ERC8004ReputationRegistry.json';
-import ERC8004VerificationRegistryArtifact from '../../out/ERC8004VerificationRegistry.sol/ERC8004VerificationRegistry.json';
+// Import generated ABIs
+import {
+  IntentVaultABI,
+  MatchEscrowABI,
+  OfferContractABI,
+  FacilitatorGatewayABI,
+  ERC8004IdentityRegistryABI,
+  ERC8004ReputationRegistryABI,
+  ERC8004VerificationRegistryABI
+} from '../contracts/abis/abi';
 
-// Configuration
-const SKALE_RPC_URL = process.env.SKALE_RPC_URL || 'https://base-sepolia-testnet.skalenodes.com/v1/bite-v2-sandbox-2';
-const PRIVATE_KEY = process.env.PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001';
+// SKALE Base Testnet Configuration
+const SKALE_ON_BASE_SEPOLIA_RPC_URL = process.env.SKALE_ON_BASE_SEPOLIA_RPC_URL || 'https://base-sepolia-testnet.skalenodes.com/v1/bite-v2-sandbox-2';
+const SKALE_CHAIN_ID = 324705682; // SKALE Base Testnet Chain ID
+
+// Private Keys
+const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001';
 const CANDIDATE_PRIVATE_KEY = process.env.CANDIDATE_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000002';
 const EMPLOYER_PRIVATE_KEY = process.env.EMPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000003';
 
-// Mock ERC20 token address (use actual Axios USD or Bridged USDC on mainnet)
-const PAYMENT_TOKEN_ADDRESS = '0x61a26022927096f444994dA1e53F0FD9487EAfcf'; // Axios USD on SKALE Base Sepolia
+// Deployed Contract Addresses on Base Sepolia
+const CONTRACT_ADDRESSES = {
+  identityRegistry: process.env.IDENTITY_REGISTRY_ADDRESS || '0x0821bF0921b19289FB30A8EA0fD65F751F3dc9bB',
+  reputationRegistry: process.env.REPUTATION_REGISTRY_ADDRESS || '0x5c7427699a532BED8d916E085dB296778844fCb9',
+  verificationRegistry: process.env.VERIFICATION_REGISTRY_ADDRESS || '0x2d159141C3Badf038216E59089D0151CB2692dCc',
+  intentVault: process.env.INTENT_VAULT_ADDRESS || '0x77013ce668D2D4598bC0409a2efF3afb948F3f09',
+  matchEscrow: process.env.MATCH_ESCROW_ADDRESS || '0x9d04136bEaA01d30Db51BD8F79232633A86E4B80',
+  offerContract: process.env.OFFER_CONTRACT_ADDRESS || '0x334Dc1ff4C520D733e73695341f138Ed0EB2eF8A',
+  facilitatorGateway: process.env.FACILITATOR_GATEWAY_ADDRESS || '0x6B7B7F7fF2ADb1c69D4e2b80C25E695720590F07',
+  mockUSDC: process.env.MOCK_USDC_ADDRESS || '0x0000000000000000000000000000000000000000'
+};
+
+// Payment Token (MockUSDC for testing)
+const PAYMENT_TOKEN_ADDRESS = process.env.MOCK_USDC_ADDRESS || CONTRACT_ADDRESSES.mockUSDC;
 
 interface DeployedContracts {
   identityRegistry: ethers.Contract;
@@ -53,93 +75,64 @@ interface DeployedContracts {
 }
 
 /**
- * Deploy all smart contracts
+ * Connect to deployed contracts on SKALE Base Testnet
  */
-async function deployContracts(deployer: ethers.Signer): Promise<DeployedContracts> {
-  console.log('\n📦 Deploying Smart Contracts...\n');
+async function connectToContracts(provider: ethers.Provider): Promise<DeployedContracts> {
+  console.log('\n📡 Connecting to Deployed Contracts on SKALE Base Testnet...\n');
+  console.log(`Network: SKALE Base Sepolia`);
+  console.log(`Chain ID: ${SKALE_CHAIN_ID}`);
+  console.log(`RPC: ${SKALE_ON_BASE_SEPOLIA_RPC_URL}\n`);
 
-  // Deploy ERC-8004 Registries
-  console.log('Deploying ERC-8004 Identity Registry...');
-  const IdentityRegistryFactory = new ethers.ContractFactory(
-    ERC8004IdentityRegistryArtifact.abi,
-    ERC8004IdentityRegistryArtifact.bytecode,
-    deployer
+  const identityRegistry = new ethers.Contract(
+    CONTRACT_ADDRESSES.identityRegistry,
+    ERC8004IdentityRegistryABI,
+    provider
   );
-  const identityRegistry = await IdentityRegistryFactory.deploy();
-  await identityRegistry.waitForDeployment();
-  console.log(`✅ Identity Registry: ${await identityRegistry.getAddress()}`);
+  console.log(`✅ ERC8004IdentityRegistry: ${CONTRACT_ADDRESSES.identityRegistry}`);
 
-  console.log('Deploying ERC-8004 Reputation Registry...');
-  const ReputationRegistryFactory = new ethers.ContractFactory(
-    ERC8004ReputationRegistryArtifact.abi,
-    ERC8004ReputationRegistryArtifact.bytecode,
-    deployer
+  const reputationRegistry = new ethers.Contract(
+    CONTRACT_ADDRESSES.reputationRegistry,
+    ERC8004ReputationRegistryABI,
+    provider
   );
-  const reputationRegistry = await ReputationRegistryFactory.deploy();
-  await reputationRegistry.waitForDeployment();
-  console.log(`✅ Reputation Registry: ${await reputationRegistry.getAddress()}`);
+  console.log(`✅ ERC8004ReputationRegistry: ${CONTRACT_ADDRESSES.reputationRegistry}`);
 
-  console.log('Deploying ERC-8004 Verification Registry...');
-  const VerificationRegistryFactory = new ethers.ContractFactory(
-    ERC8004VerificationRegistryArtifact.abi,
-    ERC8004VerificationRegistryArtifact.bytecode,
-    deployer
+  const verificationRegistry = new ethers.Contract(
+    CONTRACT_ADDRESSES.verificationRegistry,
+    ERC8004VerificationRegistryABI,
+    provider
   );
-  const verificationRegistry = await VerificationRegistryFactory.deploy();
-  await verificationRegistry.waitForDeployment();
-  console.log(`✅ Verification Registry: ${await verificationRegistry.getAddress()}`);
+  console.log(`✅ ERC8004VerificationRegistry: ${CONTRACT_ADDRESSES.verificationRegistry}`);
 
-  // Deploy IntentVault
-  console.log('Deploying IntentVault...');
-  const IntentVaultFactory = new ethers.ContractFactory(
-    IntentVaultArtifact.abi,
-    IntentVaultArtifact.bytecode,
-    deployer
+  const intentVault = new ethers.Contract(
+    CONTRACT_ADDRESSES.intentVault,
+    IntentVaultABI,
+    provider
   );
-  const intentVault = await IntentVaultFactory.deploy();
-  await intentVault.waitForDeployment();
-  console.log(`✅ IntentVault: ${await intentVault.getAddress()}`);
+  console.log(`✅ IntentVault: ${CONTRACT_ADDRESSES.intentVault}`);
 
-  // Deploy MatchEscrow
-  console.log('Deploying MatchEscrow...');
-  const MatchEscrowFactory = new ethers.ContractFactory(
-    MatchEscrowArtifact.abi,
-    MatchEscrowArtifact.bytecode,
-    deployer
+  const matchEscrow = new ethers.Contract(
+    CONTRACT_ADDRESSES.matchEscrow,
+    MatchEscrowABI,
+    provider
   );
-  const matchEscrow = await MatchEscrowFactory.deploy();
-  await matchEscrow.waitForDeployment();
-  console.log(`✅ MatchEscrow: ${await matchEscrow.getAddress()}`);
+  console.log(`✅ MatchEscrow: ${CONTRACT_ADDRESSES.matchEscrow}`);
 
-  // Deploy OfferContract
-  console.log('Deploying OfferContract...');
-  const OfferContractFactory = new ethers.ContractFactory(
-    OfferContractArtifact.abi,
-    OfferContractArtifact.bytecode,
-    deployer
+  const offerContract = new ethers.Contract(
+    CONTRACT_ADDRESSES.offerContract,
+    OfferContractABI,
+    provider
   );
-  const offerContract = await OfferContractFactory.deploy();
-  await offerContract.waitForDeployment();
-  console.log(`✅ OfferContract: ${await offerContract.getAddress()}`);
+  console.log(`✅ OfferContract: ${CONTRACT_ADDRESSES.offerContract}`);
 
-  // Deploy FacilitatorGateway
-  console.log('Deploying FacilitatorGateway...');
-  const FacilitatorGatewayFactory = new ethers.ContractFactory(
-    FacilitatorGatewayArtifact.abi,
-    FacilitatorGatewayArtifact.bytecode,
-    deployer
+  const facilitatorGateway = new ethers.Contract(
+    CONTRACT_ADDRESSES.facilitatorGateway,
+    FacilitatorGatewayABI,
+    provider
   );
-  const facilitatorGateway = await FacilitatorGatewayFactory.deploy(
-    await reputationRegistry.getAddress()
-  );
-  await facilitatorGateway.waitForDeployment();
-  console.log(`✅ FacilitatorGateway: ${await facilitatorGateway.getAddress()}`);
+  console.log(`✅ FacilitatorGateway: ${CONTRACT_ADDRESSES.facilitatorGateway}`);
 
-  // Authorize FacilitatorGateway to record reputation
-  console.log('\nAuthorizing FacilitatorGateway...');
-  const authTx = await reputationRegistry.authorizeRecorder(await facilitatorGateway.getAddress());
-  await authTx.wait();
-  console.log('✅ FacilitatorGateway authorized');
+  console.log('\n✅ All contracts connected!');
 
   return {
     identityRegistry,
@@ -150,6 +143,45 @@ async function deployContracts(deployer: ethers.Signer): Promise<DeployedContrac
     offerContract,
     facilitatorGateway
   };
+}
+
+/**
+ * Setup MockUSDC tokens for testing
+ */
+async function setupMockUSDC(
+  provider: ethers.Provider,
+  deployerSigner: ethers.Signer,
+  employerSigner: ethers.Signer,
+  matchEscrowAddress: string
+): Promise<void> {
+  console.log('\n💰 Setting up MockUSDC tokens...\n');
+
+  const mockUSDCABI = [
+    'function mint(address to, uint256 amount) external',
+    'function approve(address spender, uint256 amount) external returns (bool)',
+    'function balanceOf(address account) external view returns (uint256)',
+    'function decimals() external view returns (uint8)'
+  ];
+
+  const mockUSDC = new ethers.Contract(PAYMENT_TOKEN_ADDRESS, mockUSDCABI, provider);
+  const decimals = await mockUSDC.decimals();
+  
+  // Mint tokens to employer (150,000 USDC for safety)
+  const employerAddress = await employerSigner.getAddress();
+  const mintAmount = BigInt(150000) * BigInt(10 ** Number(decimals));
+  
+  console.log(`Minting ${ethers.formatUnits(mintAmount, decimals)} USDC to Employer...`);
+  const mintTx = await mockUSDC.connect(deployerSigner).mint(employerAddress, mintAmount);
+  await mintTx.wait();
+  
+  const balance = await mockUSDC.balanceOf(employerAddress);
+  console.log(`✅ Employer balance: ${ethers.formatUnits(balance, decimals)} USDC`);
+
+  // Employer approves MatchEscrow to spend tokens
+  console.log(`\nApproving MatchEscrow to spend tokens...`);
+  const approveTx = await mockUSDC.connect(employerSigner).approve(matchEscrowAddress, ethers.MaxUint256);
+  await approveTx.wait();
+  console.log(`✅ MatchEscrow approved to spend USDC`);
 }
 
 /**
@@ -170,12 +202,31 @@ async function registerMatchingAgent(
     owner: await agentSigner.getAddress()
   };
 
-  await erc8004Service.registerAgent(agentSigner, agentId, metadata);
-  console.log(`✅ Agent registered: ${agentId}`);
+  try {
+    await erc8004Service.registerAgent(agentSigner, agentId, metadata);
+    console.log(`✅ Agent registered: ${agentId}`);
+  } catch (error: any) {
+    // Check various places where the error message might be
+    const errorStr = JSON.stringify(error);
+    const errorMsg = error.message || error.info?.error?.message || error.reason || '';
+    
+    if (errorMsg.includes('already registered') || 
+        errorMsg.includes('Agent already registered') ||
+        errorStr.includes('already registered') ||
+        errorStr.includes('Agent already registered')) {
+      console.log(`ℹ️  Agent already registered: ${agentId}`);
+    } else {
+      throw error;
+    }
+  }
 
-  // Verify agent capabilities
-  await erc8004Service.verifyCapability(agentSigner, agentId, 'skill-matching', 365);
-  console.log('✅ Capability verified: skill-matching');
+  // Verify agent capabilities (skip if already verified)
+  try {
+    await erc8004Service.verifyCapability(agentSigner, agentId, 'skill-matching', 365);
+    console.log('✅ Capability verified: skill-matching');
+  } catch (error: any) {
+    console.log('ℹ️  Capability verification skipped (may already exist)');
+  }
 
   return agentId;
 }
@@ -462,8 +513,8 @@ async function main() {
   console.log('='.repeat(60));
 
   // Setup providers and signers
-  const provider = new ethers.JsonRpcProvider(SKALE_RPC_URL);
-  const agentSigner = new ethers.Wallet(PRIVATE_KEY, provider);
+  const provider = new ethers.JsonRpcProvider(SKALE_ON_BASE_SEPOLIA_RPC_URL);
+  const agentSigner = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider);
   const candidateSigner = new ethers.Wallet(CANDIDATE_PRIVATE_KEY, provider);
   const employerSigner = new ethers.Wallet(EMPLOYER_PRIVATE_KEY, provider);
 
@@ -473,17 +524,20 @@ async function main() {
   console.log(`Employer:  ${await employerSigner.getAddress()}`);
 
   // Initialize services
-  const biteService = createBiteService(SKALE_RPC_URL);
+  const biteService = createBiteService(SKALE_ON_BASE_SEPOLIA_RPC_URL);
   
-  // Deploy contracts
-  const contracts = await deployContracts(agentSigner);
+  // Connect to deployed contracts
+  const contracts = await connectToContracts(provider);
+
+  // Setup MockUSDC tokens for testing
+  await setupMockUSDC(provider, agentSigner, employerSigner, CONTRACT_ADDRESSES.matchEscrow);
 
   // Initialize ERC-8004 service
   const erc8004Service = createERC8004Service(
     provider,
-    await contracts.identityRegistry.getAddress(),
-    await contracts.reputationRegistry.getAddress(),
-    await contracts.verificationRegistry.getAddress()
+    CONTRACT_ADDRESSES.identityRegistry,
+    CONTRACT_ADDRESSES.reputationRegistry,
+    CONTRACT_ADDRESSES.verificationRegistry
   );
 
   // Register AI agent

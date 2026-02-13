@@ -9,6 +9,7 @@ import {IntentVault} from "../../../src/IntentVault.sol";
 import {MatchEscrow} from "../../../src/MatchEscrow.sol";
 import {OfferContract} from "../../../src/OfferContract.sol";
 import {FacilitatorGateway} from "../../../src/x402/FacilitatorGateway.sol";
+import {MockUSDC} from "../../../src/mock/MockUSDC.sol";
 
 contract DeployScript is Script {
     function run() external {
@@ -46,6 +47,11 @@ contract DeployScript is Script {
         FacilitatorGateway facilitatorGateway = new FacilitatorGateway(address(reputationRegistry));
         console.log("FacilitatorGateway deployed at:", address(facilitatorGateway));
 
+        // Deploy MockUSDC
+        console.log("Deploying MockUSDC...");
+        MockUSDC mockUSDC = new MockUSDC();
+        console.log("MockUSDC deployed at:", address(mockUSDC));
+
         // Authorize FacilitatorGateway
         console.log("Authorizing FacilitatorGateway...");
         reputationRegistry.authorizeRecorder(address(facilitatorGateway));
@@ -67,7 +73,8 @@ contract DeployScript is Script {
             '    "IntentVault": "', vm.toString(address(intentVault)), '",\n',
             '    "MatchEscrow": "', vm.toString(address(matchEscrow)), '",\n',
             '    "OfferContract": "', vm.toString(address(offerContract)), '",\n',
-            '    "FacilitatorGateway": "', vm.toString(address(facilitatorGateway)), '"\n',
+            '    "FacilitatorGateway": "', vm.toString(address(facilitatorGateway)), '",\n',
+            '    "MockUSDC": "', vm.toString(address(mockUSDC)), '"\n',
             '  }\n',
             '}'
         );
