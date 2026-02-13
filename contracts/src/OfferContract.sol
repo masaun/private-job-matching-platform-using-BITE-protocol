@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.27;
 
-import { BITE } from "@skalenetwork/bite-solidity/BITE.sol";
-import { IBiteSupplicant } from "@skalenetwork/bite-solidity/interfaces/IBiteSupplicant.sol";
+import { BITE } from "./bite-protocol/BITE.sol";
+import { IBiteSupplicant } from "./bite-protocol/IBiteSupplicant.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
@@ -33,7 +33,8 @@ contract OfferContract is IBiteSupplicant {
 
     uint256 public constant OFFER_VALIDITY = 7 days;
     uint256 public constant CTX_GAS_LIMIT = 2500000;
-    uint256 public constant CTX_GAS_PAYMENT = 0.06 ether;
+    // CTX_GAS_PAYMENT set to 0 for SKALE (zero gas price)
+    uint256 public constant CTX_GAS_PAYMENT = 0;
 
     event OfferCreated(
         bytes32 indexed offerId,
@@ -113,7 +114,11 @@ contract OfferContract is IBiteSupplicant {
         );
 
         ctxSenders[offerId] = ctxSender;
-        payable(ctxSender).sendValue(msg.value);
+        
+        // Only send value if payment is required (> 0)
+        if (msg.value > 0) {
+            payable(ctxSender).sendValue(msg.value);
+        }
     }
 
     /**

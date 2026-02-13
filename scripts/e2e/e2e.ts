@@ -648,7 +648,8 @@ async function revealAndReviewOffer(
   };
 
   // Try to use BITE CTX if available, but fall back to simulation
-  const CTX_GAS_PAYMENT = ethers.parseEther('0.06');
+  // CTX_GAS_PAYMENT set to 0 for SKALE (zero gas price)
+  const CTX_GAS_PAYMENT = 0;
   let usedBiteCTX = false;
 
   try {
@@ -677,8 +678,14 @@ async function revealAndReviewOffer(
     usedBiteCTX = true;
     
   } catch (error: any) {
-    console.log('ℹ️  BITE CTX not available (requires full BITE infrastructure)');
-    console.log(`   ${error.message || 'Network or infrastructure issue'}`);
+    const errorMsg = error.message || '';
+    
+    if (errorMsg.includes('IncorrectReturnDataLength') || errorMsg.includes('0xb4a47854')) {
+      console.log('ℹ️  BITE precompiles not available on this network');
+      console.log('   This network does not have BITE CTX infrastructure deployed');
+    } else {
+      console.log(`ℹ️  BITE CTX not available: ${errorMsg.split('\n')[0]}`);
+    }
     console.log('📝 Using simulated decryption for demo purposes');
   }
 
