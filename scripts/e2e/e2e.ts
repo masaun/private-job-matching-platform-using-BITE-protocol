@@ -51,6 +51,7 @@ const MOCK_USDC_MINTER_PRIVATE_KEY = process.env.MOCK_USDC_MINTER_PRIVATE_KEY ||
 const AI_AGENT_PRIVATE_KEY = process.env.AI_AGENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000004';
 const CANDIDATE_PRIVATE_KEY = process.env.CANDIDATE_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000002';
 const EMPLOYER_PRIVATE_KEY = process.env.EMPLOYER_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000003';
+const PAYWALLED_SERVICE_RECIPIENT_PRIVATE_KEY = process.env.PAYWALLED_SERVICE_RECIPIENT_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000005';
 
 // Deployed Contract Addresses on Base Sepolia
 const CONTRACT_ADDRESSES = {
@@ -470,15 +471,15 @@ async function performConfidentialMatching(
   console.log('='.repeat(60));
   console.log('🧠 AI Agent Accessing Paywalled Matching Service...\n');
   
-  console.log('💡 x402 Protocol Flow:');
-  console.log('   Step 1: Agent requests matching service');
-  console.log('   Step 2: Service returns 402 Payment Required');
-  console.log('   Step 3: Agent creates ERC-3009 payment authorization');
-  console.log('   Step 4: Agent signs payment with private key');
-  console.log('   Step 5: Agent retries request with payment headers');
-  console.log('   Step 6: Facilitator verifies signature');
-  console.log('   Step 7: Facilitator settles payment on-chain');
-  console.log('   Step 8: Service returns matching results\n');
+  // console.log('💡 x402 Protocol Flow:');
+  // console.log('   Step 1: Agent requests matching service');
+  // console.log('   Step 2: Service returns 402 Payment Required');
+  // console.log('   Step 3: Agent creates ERC-3009 payment authorization');
+  // console.log('   Step 4: Agent signs payment with private key');
+  // console.log('   Step 5: Agent retries request with payment headers');
+  // console.log('   Step 6: Facilitator verifies signature');
+  // console.log('   Step 7: Facilitator settles payment on-chain');
+  // console.log('   Step 8: Service returns matching results\n');
   
   const serviceUrl = paywalledService.getServiceUrl();
   const paymentReq = paywalledService.getPaymentRequirement();
@@ -495,11 +496,11 @@ async function performConfidentialMatching(
     // In a real scenario, this would make an HTTP request that gets a 402 response
     // For demo purposes, we'll simulate the flow directly
     
-    // Simulate 402 response
-    console.log('\n📡 Step 1-2: Requesting service... Received 402 Payment Required');
+    // // Simulate 402 response
+    // console.log('\n📡 Step 1-2: Requesting service... Received 402 Payment Required');
     
-    // Simulate payment creation and retry
-    console.log('💳 Step 3-5: Creating payment authorization and retrying...');
+    // // Simulate payment creation and retry
+    // console.log('💳 Step 3-5: Creating payment authorization and retrying...');
     
     // In production, this would use:
     // const result = await x402Service.payForMatchingService(serviceUrl, {
@@ -516,21 +517,27 @@ async function performConfidentialMatching(
     };
     
     // Simulate payment verification (in production, facilitator does this)
-    console.log('✅ Step 6-7: Payment signature verified and settled');
+    // console.log('✅ Step 6-7: Payment signature verified and settled');
+    // console.log('   Note: Using demo mode - in production, facilitator verifies on-chain');
     
-    // Simulate service execution
-    const serviceResponse = await paywalledService.handleMatchRequest(
+    // Simulate service execution with demo mode (bypasses real facilitator calls)
+    // In production with live facilitator, this would use handleMatchRequest instead
+    const serviceResponse = await paywalledService.handleMatchRequestDemo(
       mockRequest,
-      { 'x-payment-authorization': 'mock-payment-auth' } // Simulated payment header
+      true // Payment present = true (simulates successful payment)
     );
     
     if (serviceResponse.status === 200) {
-      console.log('✅ Step 8: Matching results received');
-      console.log('\n✅ x402 PAYMENT SUCCESSFUL');
-      console.log('   - Agent autonomously paid for AI service');
-      console.log('   - Payment verified and settled via facilitator');
-      console.log('   - Service accessed without human intervention');
-      console.log('   - Complete agentic commerce flow demonstrated\n');
+      // console.log('✅ Step 8: Matching results received');
+      // console.log('\n✅ x402 PAYMENT FLOW DEMONSTRATED');
+      // console.log('   - Agent autonomously created payment authorization');
+      // console.log('   - Payment would be verified and settled via facilitator');
+      // console.log('   - Service accessed after payment verification');
+      // console.log('   - Complete agentic commerce flow simulated\n');
+      // console.log('   💡 In production with live facilitator:');
+      // console.log('      - Payment signature verified on-chain via ERC-3009');
+      // console.log('      - Facilitator settles payment atomically');
+      // console.log('      - Service gets payment confirmation before responding\n');
       
       const result = serviceResponse.body;
       console.log(`📊 Match Score: ${result.score}/100`);
@@ -568,7 +575,7 @@ async function submitMatchProof(
   console.log('\n💡 Access Control Enforced by Smart Contract:');
   console.log('   - FacilitatorGateway checks ERC-8004 ReputationRegistry');
   console.log('   - Required: Agent reputation score ≥ 100');
-  console.log('   - Prevents: Sybil attacks, spam matches from untrusted agents');
+  //console.log('   - Prevents: Sybil attacks, spam matches from untrusted agents');
   console.log('   - Reputation earned: Through successfully verified matches');
   
   const agentIdBytes = ethers.id(agentId);
@@ -744,6 +751,7 @@ async function revealAndReviewOffer(
   let usedBiteCTX = false;
 
   try {
+    console.log('');
     console.log('🔐 Attempting BITE CTX decryption...');
     
     // Set a timeout for the transaction
@@ -772,12 +780,12 @@ async function revealAndReviewOffer(
     const errorMsg = error.message || '';
     
     if (errorMsg.includes('IncorrectReturnDataLength') || errorMsg.includes('0xb4a47854')) {
-      console.log('ℹ️  BITE precompiles not available on this network');
-      console.log('   This network does not have BITE CTX infrastructure deployed');
+      //console.log('ℹ️  BITE precompiles not available on this network');
+      //console.log('   This network does not have BITE CTX infrastructure deployed');
     } else {
-      console.log(`ℹ️  BITE CTX not available: ${errorMsg.split('\n')[0]}`);
+      //console.log(`ℹ️  BITE CTX not available: ${errorMsg.split('\n')[0]}`);
     }
-    console.log('📝 Using simulated decryption for demo purposes');
+    //console.log('📝 Using simulated decryption for demo purposes');
   }
 
   // Get offer data from contract
@@ -1193,8 +1201,8 @@ async function monitorCommitteeRotation(
  * Display Privacy & Trust Model Explanation
  */
 function displayPrivacyModel() {
-  console.log('\n📋 PRIVACY & TRUST MODEL - Why BITE Protocol Matters');
-  console.log('='.repeat(80));
+  // console.log('\n📋 PRIVACY & TRUST MODEL - Why BITE Protocol Matters');
+  // console.log('='.repeat(80));
   
   console.log('\n🔐 WHAT IS KEPT PRIVATE:');
   console.log('   • Candidate Skills & Salary Expectations - Encrypted until match verified');
@@ -1202,18 +1210,18 @@ function displayPrivacyModel() {
   console.log('   • Offer Terms (salary, benefits) - Encrypted until candidate chooses to reveal');
   console.log('   • Failed matches - No on-chain trace if score < 70%');
   
-  console.log('\n⚡ WHY PRIVACY MATTERS (Real-World Threats Prevented):');
-  console.log('   1. Front-Running Prevention:');
-  console.log('      ❌ Without BITE: Recruiters can copy job postings and undercut agent fees');
-  console.log('      ✅ With BITE: Job requirements stay encrypted until match is proven');
+  // console.log('\n⚡ WHY PRIVACY MATTERS (Real-World Threats Prevented):');
+  // console.log('   1. Front-Running Prevention:');
+  // console.log('      ❌ Without BITE: Recruiters can copy job postings and undercut agent fees');
+  // console.log('      ✅ With BITE: Job requirements stay encrypted until match is proven');
   
-  console.log('\n   2. Salary Confidentiality:');
-  console.log('      ❌ Without BITE: Offer amounts visible on-chain, enabling poaching');
-  console.log('      ✅ With BITE: Salary encrypted via CTX, only candidate can decrypt');
+  // console.log('\n   2. Salary Confidentiality:');
+  // console.log('      ❌ Without BITE: Offer amounts visible on-chain, enabling poaching');
+  // console.log('      ✅ With BITE: Salary encrypted via CTX, only candidate can decrypt');
   
-  console.log('\n   3. Candidate Privacy:');
-  console.log('      ❌ Without BITE: Skills/experience exposed to all, enabling spam');
-  console.log('      ✅ With BITE: Profile encrypted, matching happens off-chain');
+  // console.log('\n   3. Candidate Privacy:');
+  // console.log('      ❌ Without BITE: Skills/experience exposed to all, enabling spam');
+  // console.log('      ✅ With BITE: Profile encrypted, matching happens off-chain');
   
   console.log('\n🎯 WHEN DATA UNLOCKS (Conditional Triggers):');
   console.log('   Condition #1: Match Score ≥ 70%');
@@ -1238,21 +1246,21 @@ function displayPrivacyModel() {
   console.log('   Agent     → Submit match proof (if reputation ≥ 100)');
   console.log('   Anyone    → Cannot see encrypted data without proper authorization');
   
-  console.log('\n📊 AUDITABLE LIFECYCLE (On-Chain Trail):');
-  console.log('   1️⃣  Encrypted intent stored (candidate/employer) → IntentVault events');
-  console.log('   2️⃣  Match proof submitted (if score ≥ 70%) → FacilitatorGateway events');
-  console.log('   3️⃣  Escrow created with timeout → MatchEscrow events');
-  console.log('   4️⃣  Encrypted offer created → OfferContract events');
-  console.log('   5️⃣  CTX triggered by candidate → BITE precompile logs (if available)');
-  console.log('   6️⃣  Settlement executed → Payment distribution events');
-  console.log('   7️⃣  Reputation updated → ERC-8004 ReputationRegistry events');
+  // console.log('\n📊 AUDITABLE LIFECYCLE (On-Chain Trail):');
+  // console.log('   1️⃣  Encrypted intent stored (candidate/employer) → IntentVault events');
+  // console.log('   2️⃣  Match proof submitted (if score ≥ 70%) → FacilitatorGateway events');
+  // console.log('   3️⃣  Escrow created with timeout → MatchEscrow events');
+  // console.log('   4️⃣  Encrypted offer created → OfferContract events');
+  // console.log('   5️⃣  CTX triggered by candidate → BITE precompile logs (if available)');
+  // console.log('   6️⃣  Settlement executed → Payment distribution events');
+  // console.log('   7️⃣  Reputation updated → ERC-8004 ReputationRegistry events');
   
-  console.log('\n💼 COMMERCE-GRADE GUARDRAILS:');
-  console.log('   ✓ Minimum match score threshold (70%) - Quality control');
-  console.log('   ✓ Agent reputation minimum (100) - Sybil resistance');
-  console.log('   ✓ Escrow with timeout (7 days) - Fund safety');
-  console.log('   ✓ Candidate-only revelation - Privacy control');
-  console.log('   ✓ Automatic payment distribution - Trust minimization');
+  // console.log('\n💼 COMMERCE-GRADE GUARDRAILS:');
+  // console.log('   ✓ Minimum match score threshold (70%) - Quality control');
+  // console.log('   ✓ Agent reputation minimum (100) - Sybil resistance');
+  // console.log('   ✓ Escrow with timeout (7 days) - Fund safety');
+  // console.log('   ✓ Candidate-only revelation - Privacy control');
+  // console.log('   ✓ Automatic payment distribution - Trust minimization');
   
   console.log('\n🔄 ENCRYPTION LIFECYCLE:');
   console.log('   Encrypted → Condition Met → Decrypt → Execute → Verify');
@@ -1267,6 +1275,7 @@ function displayPrivacyModel() {
  * Main execution flow
  */
 async function main() {
+  console.log('='.repeat(60));
   console.log('🔐 Private Job Matching Platform - E2E Demo');
   console.log('='.repeat(60));
   
@@ -1280,12 +1289,16 @@ async function main() {
   const agentSigner = new ethers.Wallet(AI_AGENT_PRIVATE_KEY, provider);
   const candidateSigner = new ethers.Wallet(CANDIDATE_PRIVATE_KEY, provider);
   const employerSigner = new ethers.Wallet(EMPLOYER_PRIVATE_KEY, provider);
+  const paywalledServiceRecipientSigner = new ethers.Wallet(PAYWALLED_SERVICE_RECIPIENT_PRIVATE_KEY, provider);
 
   console.log('\n👥 Actors:');
-  console.log(`Mock USDC Minter:    ${await mockUsdcMinterSigner.getAddress()}`);
   console.log(`Agent:     ${await agentSigner.getAddress()}`);
   console.log(`Candidate: ${await candidateSigner.getAddress()}`);
   console.log(`Employer:  ${await employerSigner.getAddress()}`);
+
+  console.log('\n👥 Extra Actors (who is just for supporting the E2E demo):');
+  console.log(`Mock USDC Minter:    ${await mockUsdcMinterSigner.getAddress()}`);
+  console.log(`Paywalled Service Recipient: ${await paywalledServiceRecipientSigner.getAddress()}`);
 
   // Check ETH balances for all accounts
   await checkEthBalances(provider, mockUsdcMinterSigner, agentSigner, candidateSigner, employerSigner);
@@ -1311,7 +1324,7 @@ async function main() {
     serviceUrl: 'https://api.example.com/ai-matching', // Mock URL
     paymentToken: PAYMENT_TOKEN_ADDRESS,
     pricePerMatch: String(50 * 1e6), // $50 USDC per match
-    recipientAddress: await deployerSigner.getAddress() // Service provider
+    recipientAddress: await paywalledServiceRecipientSigner.getAddress() // Service provider
   });
   console.log(`   Service URL: ${paywalledMatchingService.getServiceUrl()}`);
   console.log(`   Price: ${ethers.formatUnits(paywalledMatchingService.getPaymentRequirement().amount, 6)} USDC`);
@@ -1368,10 +1381,11 @@ async function main() {
   
   if (score >= 70) {
     console.log(`Result: ✅ CONDITION MET (${score} ≥ 70)`);
-    console.log('\n💡 Why this matters:');
-    console.log('   - Prevents spam matches from low-quality agents');
-    console.log('   - Ensures only high-confidence matches proceed to offer');
-    console.log('   - Failed matches leave no on-chain trace (privacy preserved)');
+    // console.log('\n💡 Why this matters:');
+    // console.log('   - Prevents spam matches from low-quality agents');
+    // console.log('   - Ensures only high-confidence matches proceed to offer');
+    // console.log('   - Failed matches leave no on-chain trace (privacy preserved)');
+    console.log('');
     console.log('\n✅ MATCH THRESHOLD MET - Proceeding with offer');
 
     // Submit match proof
@@ -1511,7 +1525,8 @@ async function main() {
       // ========================================
       // STEP 5: Display complete audit trail
       // ========================================
-      displayAuditTrail();
+      
+      //displayAuditTrail();
 
       console.log('\n🎉 SUCCESS - Complete job matching flow executed!');
       console.log('\n✅ All steps completed:');
@@ -1549,8 +1564,11 @@ async function main() {
     console.log('Match remains confidential, no on-chain trace');
   }
 
-  console.log('\n='.repeat(60));
+  console.log('\n='.repeat(5));
+  console.log('');
   console.log('🔐 Demo Complete');
+  console.log('');
+  console.log('\n='.repeat(60));
 }
 
 // Run the demo

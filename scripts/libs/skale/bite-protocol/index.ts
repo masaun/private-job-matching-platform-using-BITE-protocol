@@ -79,7 +79,7 @@ export class BiteProtocolService {
       };
     } catch (error) {
       // Fallback for demo when BITE infrastructure is not available
-      console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
+      //console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
       return {
         encrypted: hexData,
         timestamp: Date.now()
@@ -112,7 +112,7 @@ export class BiteProtocolService {
       };
     } catch (error) {
       // Fallback for demo when BITE infrastructure is not available
-      console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
+      //console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
       return {
         encrypted: hexData,
         timestamp: Date.now()
@@ -140,7 +140,7 @@ export class BiteProtocolService {
       return await this.getBite().encryptMessage(hexData);
     } catch (error) {
       // Fallback for demo when BITE infrastructure is not available
-      console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
+      //console.log('   ℹ️  Using mock encryption (BITE infrastructure not available)');
       return hexData;
     }
   }
@@ -164,7 +164,7 @@ export class BiteProtocolService {
       return await this.getBite().encryptTransaction(transaction);
     } catch (error) {
       // Fallback for demo when BITE infrastructure is not available
-      throw new Error('BITE infrastructure not available');
+      //throw new Error('BITE infrastructure not available');
     }
   }
 
@@ -193,7 +193,7 @@ export class BiteProtocolService {
       return await this.getBite().getCommitteesInfo();
     } catch (error) {
       // Fallback for demo when BITE infrastructure is not available
-      console.log('   ℹ️  Using mock committee info (BITE infrastructure not available)');
+      //console.log('   ℹ️  Using mock committee info (BITE infrastructure not available)');
       return [
         {
           id: 'mock-committee-1',

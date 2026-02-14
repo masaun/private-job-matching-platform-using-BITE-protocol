@@ -80,6 +80,43 @@ export class PaywalledMatchingService {
   }
 
   /**
+   * Demo mode: Simulate the complete flow without real facilitator calls
+   * Used for demonstration when facilitator infrastructure is unavailable
+   */
+  async handleMatchRequestDemo(
+    request: MatchingRequest,
+    hasPayment: boolean = true
+  ): Promise<{ status: number; body: any; headers?: Record<string, string> }> {
+    // Simulate payment check
+    if (!hasPayment) {
+      return {
+        status: 402,
+        body: {
+          error: 'Payment Required',
+          payment: {
+            amount: this.pricePerMatch,
+            token: this.paymentToken,
+            recipient: this.recipientAddress,
+            chainId: 324705682
+          }
+        },
+        headers: {
+          'WWW-Authenticate': `x402 realm="/match"`,
+          'X-Payment-Required': 'true'
+        }
+      };
+    }
+
+    // Payment verified, perform matching
+    const result = await this.performMatching(request);
+    
+    return {
+      status: 200,
+      body: result
+    };
+  }
+
+  /**
    * Mock AI matching algorithm
    * In production, this would call actual AI models
    */
