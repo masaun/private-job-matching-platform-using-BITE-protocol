@@ -1,10 +1,16 @@
 # 🔐 Private Job Matching Platform
 
 ## Overview
-A privacy-preserving job matching platform where AI agents act as job matching agents, built on **SKALE (BASE Sepolia)** using:
+A privacy-preserving job matching platform where **AI agents** act as `job matching agents`, built on **SKALE (BASE Sepolia)** using:
 - **BITE Protocol** - Blockchain Integrated `Threshold Encryption`
 - **x402** - Payment protocol for AI services
 - **ERC-8004** - Agent identity, reputation, and verification
+
+## Benefits
+
+**For `Candidates`:** Unlike traditional platforms where your resume and salary expectations are visible to recruiters and potentially your current employer, this platform keeps your job search completely confidential until you choose to reveal a specific offer.
+
+**For `Employers`:** Unlike traditional job boards where your openings and budget constraints are public to competitors and recruiting agencies, this platform keeps your hiring needs and compensation ranges fully encrypted until matched with qualified candidates.
 
 
 ## 🎯 Features
@@ -111,11 +117,11 @@ NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
 
 <br>
 
-## DEMO Video
+## DEMO video (E2E flow)
 
-- DEMO Video showing the conditional flow end-to-end (encrypted → trigger → execution):
-  https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
-   
+- DEMO video showing the conditional flow end-to-end (encrypted → trigger → execution):
+  - In this DEMO video, the `end-to-end` flow is demonstrated by running the `e2e.ts`
+     https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
 
 
 <br>
