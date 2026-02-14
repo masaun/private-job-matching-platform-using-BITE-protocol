@@ -1,4 +1,4 @@
-# 🔐 Private Job Matching Platform
+# 🔐 Private Job Matching Platform (using BITE Protocol)
 
 ## Overview
 A privacy-preserving job matching platform where **AI agents** act as `job matching agents`, built on **SKALE (BASE Sepolia)** using:
