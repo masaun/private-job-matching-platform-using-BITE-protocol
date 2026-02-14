@@ -198,15 +198,6 @@ Candidate
 
 <br>
 
-## DEMO video (E2E flow)
-
-- DEMO video showing the conditional flow end-to-end (encrypted → trigger → execution):
-  - In this DEMO video, the `end-to-end` flow is demonstrated by running the `e2e.ts`
-     https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
-
-
-<br>
-
 ## 📦 Smart Contracts
 
 ### Core Contracts
@@ -243,6 +234,14 @@ NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
 - Chain ID: 324705682
 - RPC: https://base-sepolia-testnet.skalenodes.com/v1/jubilant-horrible-ancha
 - Block Explorer: https://base-sepolia-testnet-explorer.skalenodes.com
+
+<br>
+
+## DEMO video (E2E flow)
+
+- DEMO video showing the conditional flow end-to-end (encrypted → trigger → execution):
+  - In this DEMO video, the `end-to-end` flow is demonstrated by running the `e2e.ts`
+     https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
 
 
 <br>
