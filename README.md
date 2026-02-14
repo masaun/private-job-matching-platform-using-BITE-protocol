@@ -61,6 +61,13 @@ A privacy-preserving job matching platform where **AI agents** act as `job match
        │                  zkProof                       │
        │                       ├───────────────────────►│
        │                       │                        │
+       │               ┌───────▼────────┐               │
+       │               │ Proof Verified │               │
+       │               │   Reputation   │               │
+       │               │     Updated    │               │
+       │               │   (ERC-8004)   │               │
+       │               └───────┬────────┘               │
+       │                       │                        │
        │                  ┌────▼─────┐                  │
        │                  │  Escrow  │◄─────────────────┤
        │                  └────┬─────┘                  │
