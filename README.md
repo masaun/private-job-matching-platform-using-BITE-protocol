@@ -85,102 +85,6 @@ A privacy-preserving job matching platform where **AI agents** act as `job match
 
 <br>
 
-## 📦 Smart Contracts
-
-### Core Contracts
-- **IntentVault** - Stores encrypted candidate profiles and job requirements using BITE
-- **MatchEscrow** - Holds salary + agent fee until candidate accepts/rejects
-- **OfferContract** - Creates and manages encrypted job offers
-- **FacilitatorGateway** - Verifies zk proofs from AI matching agents
-
-### ERC-8004 Registries
-- **ERC8004IdentityRegistry** - Agent registration and metadata
-- **ERC8004ReputationRegistry** - Track agent performance and credibility
-- **ERC8004VerificationRegistry** - Verify agent capabilities
-
-<br>
-
-## Deployed Contract Addresses on [`SKALE / BASE Sepolia`](https://docs.skale.space/developers/integrate-skale/connect-to-skale#skale-base-testnet) 
-
-NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
-
-| Contract Name | Address |
-|--------------|---------|
-| **ERC8004IdentityRegistry** | [`0x1396149da537645cc8c77f4b4a312f6e23a74143`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1396149da537645cc8c77f4b4a312f6e23a74143) |
-| **ERC8004ReputationRegistry** | [`0xa4d646605c74b4bb95e006375825cac8ae846981`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xa4d646605c74b4bb95e006375825cac8ae846981) |
-| **ERC8004VerificationRegistry** | [`0x985d734f7b61f9db72087025da661b14e65871a6`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x985d734f7b61f9db72087025da661b14e65871a6) |
-| **IntentVault** | [`0x9b58e2288a0d00cc67996b8210cb9871523c2daf`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x9b58e2288a0d00cc67996b8210cb9871523c2daf) |
-| **MatchEscrow** | [`0xeedbc84bdb660b013e80433afd0534d3947fa349`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xeedbc84bdb660b013e80433afd0534d3947fa349) |
-| **OfferContract** | [`0x2afc489ac5dc040bcbdea9d545884bc7a57f6136`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x2afc489ac5dc040bcbdea9d545884bc7a57f6136) |
-| **FacilitatorGateway** | [`0x5d41a0292a7381321a65d430dda70a7b433a49b5`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x5d41a0292a7381321a65d430dda70a7b433a49b5) |
-| **MockUSDC** | [`0x12e3e841555e6e2b3db3152198c982050d0cbedc`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x12e3e841555e6e2b3db3152198c982050d0cbedc) |
-
-**Network:**
-
-- Network: SKALE Base Sepolia
-- Chain ID: 324705682
-- RPC: https://base-sepolia-testnet.skalenodes.com/v1/jubilant-horrible-ancha
-- Block Explorer: https://base-sepolia-testnet-explorer.skalenodes.com
-
-<br>
-
-## DEMO video (E2E flow)
-
-- DEMO video showing the conditional flow end-to-end (encrypted → trigger → execution):
-  - In this DEMO video, the `end-to-end` flow is demonstrated by running the `e2e.ts`
-     https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
-
-
-<br>
-
-
-## 🚀 Quick Start
-
-### Prerequisites
-```bash
-# Install Foundry
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-
-# Install Node.js dependencies for contracts
-cd contracts
-npm install
-
-# Install Node.js dependencies for scripts
-cd ../scripts
-npm install
-```
-
-### Setup Environment
-```bash
-# Setup environment for contracts
-cd contracts
-cp .env.example .env
-# Edit .env with your private keys and configuration
-
-# Setup environment for scripts
-cd ../scripts
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-### Build Contracts
-```bash
-cd contracts
-forge build
-```
-
-### Run Tests
-```bash
-cd contracts
-forge test
-```
-
-### Run E2E Demo
-```bash
-cd scripts
-npm run e2e
-```
 
 ## 📝 Flow Diagram
 
@@ -258,6 +162,7 @@ Candidate
                      └── Fee → AI Agent
 ```
 
+
 ## 🔑 Key Technologies
 
 ### SKALE BITE Protocol
@@ -289,6 +194,59 @@ Candidate
 - **Success**: +100 points per successful match
 - **Failure**: -50 points per failed match
 - **Threshold**: Minimum 100 points to submit proofs
+
+
+<br>
+
+## DEMO video (E2E flow)
+
+- DEMO video showing the conditional flow end-to-end (encrypted → trigger → execution):
+  - In this DEMO video, the `end-to-end` flow is demonstrated by running the `e2e.ts`
+     https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
+
+
+<br>
+
+## 📦 Smart Contracts
+
+### Core Contracts
+- **IntentVault** - Stores encrypted candidate profiles and job requirements using BITE
+- **MatchEscrow** - Holds salary + agent fee until candidate accepts/rejects
+- **OfferContract** - Creates and manages encrypted job offers
+- **FacilitatorGateway** - Verifies zk proofs from AI matching agents
+
+### ERC-8004 Registries
+- **ERC8004IdentityRegistry** - Agent registration and metadata
+- **ERC8004ReputationRegistry** - Track agent performance and credibility
+- **ERC8004VerificationRegistry** - Verify agent capabilities
+
+<br>
+
+## Deployed Contract Addresses on [`SKALE / BASE Sepolia`](https://docs.skale.space/developers/integrate-skale/connect-to-skale#skale-base-testnet) 
+
+NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
+
+| Contract Name | Address |
+|--------------|---------|
+| **ERC8004IdentityRegistry** | [`0x1396149da537645cc8c77f4b4a312f6e23a74143`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1396149da537645cc8c77f4b4a312f6e23a74143) |
+| **ERC8004ReputationRegistry** | [`0xa4d646605c74b4bb95e006375825cac8ae846981`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xa4d646605c74b4bb95e006375825cac8ae846981) |
+| **ERC8004VerificationRegistry** | [`0x985d734f7b61f9db72087025da661b14e65871a6`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x985d734f7b61f9db72087025da661b14e65871a6) |
+| **IntentVault** | [`0x9b58e2288a0d00cc67996b8210cb9871523c2daf`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x9b58e2288a0d00cc67996b8210cb9871523c2daf) |
+| **MatchEscrow** | [`0xeedbc84bdb660b013e80433afd0534d3947fa349`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xeedbc84bdb660b013e80433afd0534d3947fa349) |
+| **OfferContract** | [`0x2afc489ac5dc040bcbdea9d545884bc7a57f6136`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x2afc489ac5dc040bcbdea9d545884bc7a57f6136) |
+| **FacilitatorGateway** | [`0x5d41a0292a7381321a65d430dda70a7b433a49b5`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x5d41a0292a7381321a65d430dda70a7b433a49b5) |
+| **MockUSDC** | [`0x12e3e841555e6e2b3db3152198c982050d0cbedc`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x12e3e841555e6e2b3db3152198c982050d0cbedc) |
+
+**Network:**
+
+- Network: SKALE Base Sepolia
+- Chain ID: 324705682
+- RPC: https://base-sepolia-testnet.skalenodes.com/v1/jubilant-horrible-ancha
+- Block Explorer: https://base-sepolia-testnet-explorer.skalenodes.com
+
+
+<br>
+
 
 ## 🛠 Development
 
@@ -360,6 +318,60 @@ Update `AGENT_FEE_BPS` in [contracts/src/MatchEscrow.sol](contracts/src/MatchEsc
 - **Reputation Gaming**: Score decay over time
 - **MEV Protection**: BITE encryption
 - **Data Integrity**: IPFS content addressing
+
+
+<br>
+
+
+## 🚀 Quick Start
+
+### Prerequisites
+```bash
+# Install Foundry
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+
+# Install Node.js dependencies for contracts
+cd contracts
+npm install
+
+# Install Node.js dependencies for scripts
+cd ../scripts
+npm install
+```
+
+### Setup Environment
+```bash
+# Setup environment for contracts
+cd contracts
+cp .env.example .env
+# Edit .env with your private keys and configuration
+
+# Setup environment for scripts
+cd ../scripts
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+### Build Contracts
+```bash
+cd contracts
+forge build
+```
+
+### Run Tests
+```bash
+cd contracts
+forge test
+```
+
+### Run E2E Demo
+```bash
+cd scripts
+npm run e2e
+```
+
+<br>
 
 ## 📚 Documentation
 
