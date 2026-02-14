@@ -1292,10 +1292,13 @@ async function main() {
   const paywalledServiceRecipientSigner = new ethers.Wallet(PAYWALLED_SERVICE_RECIPIENT_PRIVATE_KEY, provider);
 
   console.log('\n👥 Actors:');
-  console.log(`Mock USDC Minter:    ${await mockUsdcMinterSigner.getAddress()}`);
   console.log(`Agent:     ${await agentSigner.getAddress()}`);
   console.log(`Candidate: ${await candidateSigner.getAddress()}`);
   console.log(`Employer:  ${await employerSigner.getAddress()}`);
+
+  console.log('\n👥 Extra Actors (who is just for supporting the E2E demo):');
+  console.log(`Mock USDC Minter:    ${await mockUsdcMinterSigner.getAddress()}`);
+  console.log(`Paywalled Service Recipient: ${await paywalledServiceRecipientSigner.getAddress()}`);
 
   // Check ETH balances for all accounts
   await checkEthBalances(provider, mockUsdcMinterSigner, agentSigner, candidateSigner, employerSigner);
