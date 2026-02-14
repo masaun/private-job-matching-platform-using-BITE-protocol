@@ -1,9 +1,11 @@
 # 🔐 Private Job Matching Platform
 
-A privacy-preserving job matching platform where AI agents act as job matching agents, built on **SKALE** using:
+## Overview
+A privacy-preserving job matching platform where AI agents act as job matching agents, built on **SKALE (BASE Sepolia)** using:
+- **BITE Protocol** - Blockchain Integrated `Threshold Encryption`
 - **x402** - Payment protocol for AI services
 - **ERC-8004** - Agent identity, reputation, and verification
-- **BITE Protocol** - Blockchain Integrated Threshold Encryption
+
 
 ## 🎯 Features
 
@@ -66,6 +68,9 @@ A privacy-preserving job matching platform where AI agents act as job matching a
        │                  Settlement                    │
        │◄──────────────────────┴───────────────────────►│
 ```
+(NOTE: The `ZK Proof` part above is still in progress to implement)
+
+<br>
 
 ## 📦 Smart Contracts
 
@@ -88,16 +93,30 @@ NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
 
 | Contract Name | Address |
 |--------------|---------|
-| **ERC8004IdentityRegistry** | [`0x1dbfd3130a11fb9aab68f6f5e951dc6806aeee61`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1dbfd3130a11fb9aab68f6f5e951dc6806aeee61) |
-| **ERC8004ReputationRegistry** | [`0x59e5927bc672da957b209bb40945b002b81e2a7b`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x59e5927bc672da957b209bb40945b002b81e2a7b) |
-| **ERC8004VerificationRegistry** | [`0xf016f797f75deff4d64e9b18b5d251a8f38a80d1`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xf016f797f75deff4d64e9b18b5d251a8f38a80d1) |
-| **IntentVault** | [`0x4b7fdcc6e1b543303289b0d47a0895bc8813fa3e`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x4b7fdcc6e1b543303289b0d47a0895bc8813fa3e) |
-| **MatchEscrow** | [`0x863ca53da2b97a058c90972b50b49d7287ee08f2`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x863ca53da2b97a058c90972b50b49d7287ee08f2) |
-| **OfferContract** | [`0xde61b3c3d80c35b781cb438595b0978dfd180941`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xde61b3c3d80c35b781cb438595b0978dfd180941) |
-| **FacilitatorGateway** | [`0x1713e2b20be93e9fe4bba1e9d87f6fb3569bb5b7`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1713e2b20be93e9fe4bba1e9d87f6fb3569bb5b7) |
-| **MockUSDC** | [`0x794f9a51178246cbe33180e4036543bec664e3c2`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x794f9a51178246cbe33180e4036543bec664e3c2) |
+| **ERC8004IdentityRegistry** | [`0x1396149da537645cc8c77f4b4a312f6e23a74143`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x1396149da537645cc8c77f4b4a312f6e23a74143) |
+| **ERC8004ReputationRegistry** | [`0xa4d646605c74b4bb95e006375825cac8ae846981`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xa4d646605c74b4bb95e006375825cac8ae846981) |
+| **ERC8004VerificationRegistry** | [`0x985d734f7b61f9db72087025da661b14e65871a6`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x985d734f7b61f9db72087025da661b14e65871a6) |
+| **IntentVault** | [`0x9b58e2288a0d00cc67996b8210cb9871523c2daf`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x9b58e2288a0d00cc67996b8210cb9871523c2daf) |
+| **MatchEscrow** | [`0xeedbc84bdb660b013e80433afd0534d3947fa349`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0xeedbc84bdb660b013e80433afd0534d3947fa349) |
+| **OfferContract** | [`0x2afc489ac5dc040bcbdea9d545884bc7a57f6136`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x2afc489ac5dc040bcbdea9d545884bc7a57f6136) |
+| **FacilitatorGateway** | [`0x5d41a0292a7381321a65d430dda70a7b433a49b5`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x5d41a0292a7381321a65d430dda70a7b433a49b5) |
+| **MockUSDC** | [`0x12e3e841555e6e2b3db3152198c982050d0cbedc`](https://base-sepolia-testnet-explorer.skalenodes.com/address/0x12e3e841555e6e2b3db3152198c982050d0cbedc) |
 
-**Network:** SKALE Chaos Testnet (`chainId: 324705682`)
+**Network:**
+
+- Network: SKALE Base Sepolia
+- Chain ID: 324705682
+- RPC: https://base-sepolia-testnet.skalenodes.com/v1/jubilant-horrible-ancha
+- Block Explorer: https://base-sepolia-testnet-explorer.skalenodes.com
+
+<br>
+
+## DEMO Video
+
+- DEMO Video showing the conditional flow end-to-end (encrypted → trigger → execution):
+  https://www.loom.com/share/8d3a5251212b4420a7ae4321d9175c17
+   
+
 
 <br>
 
@@ -110,30 +129,43 @@ NOTE: SKALE Base Chains is built on Base L2 with native bridge to/from Base
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
 
-# Install Node.js dependencies
+# Install Node.js dependencies for contracts
+cd contracts
 npm install
-# or
-pnpm install
+
+# Install Node.js dependencies for scripts
+cd ../scripts
+npm install
 ```
 
 ### Setup Environment
 ```bash
+# Setup environment for contracts
+cd contracts
 cp .env.example .env
 # Edit .env with your private keys and configuration
+
+# Setup environment for scripts
+cd ../scripts
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
 ### Build Contracts
 ```bash
+cd contracts
 forge build
 ```
 
 ### Run Tests
 ```bash
+cd contracts
 forge test
 ```
 
 ### Run E2E Demo
 ```bash
+cd scripts
 npm run e2e
 ```
 
@@ -250,25 +282,42 @@ Candidate
 ### Project Structure
 ```
 private-job-matching-platform-using-BITE-protocol/
-├── contracts/                    # Solidity smart contracts
-│   ├── interfaces/              # Contract interfaces
-│   ├── ERC8004IdentityRegistry.sol
-│   ├── ERC8004ReputationRegistry.sol
-│   ├── ERC8004VerificationRegistry.sol
-│   ├── IntentVault.sol
-│   ├── MatchEscrow.sol
-│   ├── OfferContract.sol
-│   └── FacilitatorGateway.sol
+├── contracts/                    # Foundry project
+│   ├── src/                     # Solidity smart contracts
+│   │   ├── IntentVault.sol
+│   │   ├── MatchEscrow.sol
+│   │   ├── OfferContract.sol
+│   │   ├── bite-protocol/
+│   │   │   ├── BITE.sol
+│   │   │   └── IBiteSupplicant.sol
+│   │   ├── erc-8004/
+│   │   │   ├── ERC8004IdentityRegistry.sol
+│   │   │   ├── ERC8004ReputationRegistry.sol
+│   │   │   ├── ERC8004VerificationRegistry.sol
+│   │   │   └── interfaces/
+│   │   ├── mock/
+│   │   │   └── MockUSDC.sol
+│   │   └── x402/
+│   │       └── FacilitatorGateway.sol
+│   ├── scripts/
+│   │   └── deployments/
+│   │       └── base-sepolia/
+│   ├── foundry.toml
+│   ├── package.json
+│   └── remappings.txt
 ├── scripts/                     # TypeScript scripts
+│   ├── contracts/
+│   │   └── abis/
+│   ├── e2e/
+│   │   └── e2e.ts               # End-to-end demo
 │   ├── libs/                    # SDK integrations
 │   │   └── skale/
 │   │       ├── bite-protocol/   # BITE SDK wrapper
 │   │       ├── erc-8004/        # ERC-8004 SDK
 │   │       └── x402/            # x402 SDK
-│   └── e2e/
-│       └── e2e.ts               # End-to-end demo
-├── foundry.toml                 # Foundry configuration
-├── package.json                 # Node.js dependencies
+│   ├── extract-abis.ts
+│   ├── package.json
+│   └── tsconfig.json
 └── README.md
 ```
 
@@ -281,7 +330,7 @@ Edit `performConfidentialMatching()` in [scripts/e2e/e2e.ts](scripts/e2e/e2e.ts)
 Modify `MatchEscrow.sol` constants
 
 **Adjust agent fees**:
-Update `AGENT_FEE_BPS` in [contracts/MatchEscrow.sol](contracts/MatchEscrow.sol)
+Update `AGENT_FEE_BPS` in [contracts/src/MatchEscrow.sol](contracts/src/MatchEscrow.sol)
 
 ## 🔒 Security Considerations
 
