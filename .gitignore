@@ -7,6 +7,9 @@ circuits/**/target
 
 # dependencies
 /node_modules
+**-lock.json
+**.lock
+**.lockb
 /.pnp
 .pnp.*
 .yarn/*
